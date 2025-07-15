@@ -19,7 +19,9 @@ import java.time.LocalDateTime;
 @Builder
 public class RegisterRequest {
     @NotBlank
-    private String name;
+    private String firstName;
+    @NotBlank
+    private String lastName;
     @NotBlank @Email(message = "Please Enter a Valid Email !")
     private String email;
     @NotBlank

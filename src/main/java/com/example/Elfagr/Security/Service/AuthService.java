@@ -44,7 +44,7 @@ public class AuthService {
             throw new IllegalArgumentException("This Phone Number Already Exists !");
         }
         var user = new User();
-        user.setName(request.getName());
+        user.setName(request.getFirstName()+" "+request.getLastName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setBirthdate(request.getBirthdate());
