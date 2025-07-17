@@ -31,6 +31,6 @@ public class UserDTO {
     private Boolean isEnabled;
     private Boolean isDeleted;
     private LocalDateTime deletedAt;
-    private LocalDateTime creationDate;
+    private LocalDateTime createdAt;
     private LocalDateTime lastLoginDate;
 }

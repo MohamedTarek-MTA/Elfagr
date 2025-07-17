@@ -25,30 +25,30 @@ public class UserMapper {
                 user.getIsEnabled(),
                 user.getIsDeleted(),
                 user.getDeletedAt(),
-                user.getCreationDate(),
+                user.getCreatedAt(),
                 user.getLastLoginDate()
         );
     }
     public static User toEntity(UserDTO user,String password , String verificationCode , LocalDateTime deletedAt,Boolean isDeleted){
-        return new User(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                password,
-                user.getImageUrl(),
-                user.getGender(),
-                user.getRole(),
-                user.getPhone(),
-                user.getBirthdate(),
-                user.getStatus(),
-                verificationCode,
-                user.getAddress(),
-                user.getCreationDate(),
-                user.getLastLoginDate(),
-                deletedAt,
-                user.getIsEnabled(),
-                isDeleted
-        );
+        return User.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .password(password)
+                .address(user.getAddress())
+                .birthdate(user.getBirthdate())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .gender(user.getGender())
+                .imageUrl(user.getImageUrl())
+                .status(user.getStatus())
+                .isEnabled(user.getIsEnabled())
+                .isDeleted(user.getIsDeleted())
+                .createdAt(user.getCreatedAt())
+                .lastLoginDate(user.getLastLoginDate())
+                .deletedAt(user.getDeletedAt())
+                .verificationCode(verificationCode)
+                .build();
 
     }
 }

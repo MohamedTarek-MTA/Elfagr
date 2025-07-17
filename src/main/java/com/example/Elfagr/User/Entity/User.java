@@ -1,6 +1,7 @@
 package com.example.Elfagr.User.Entity;
 
 
+import com.example.Elfagr.Inventory.Entity.InventoryTransaction;
 import com.example.Elfagr.User.Enum.Gender;
 import com.example.Elfagr.User.Enum.Role;
 import com.example.Elfagr.User.Enum.Status;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Table(
         name = "users",
@@ -90,6 +92,8 @@ public class User implements UserDetails {
 
     private Boolean isDeleted = false;
 
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<InventoryTransaction> inventoryTransactions;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

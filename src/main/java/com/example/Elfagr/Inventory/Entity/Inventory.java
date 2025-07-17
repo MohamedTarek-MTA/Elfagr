@@ -1,12 +1,14 @@
 package com.example.Elfagr.Inventory.Entity;
 
+import com.example.Elfagr.Inventory.Enum.InventoryType;
 import com.example.Elfagr.Inventory.Enum.Status;
-import com.example.Elfagr.Inventory.Enum.Type;
+import com.example.Elfagr.Product.Entity.ProductInventory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "inventories" , indexes = {
@@ -45,6 +47,14 @@ public class Inventory {
     private Status status;
 
     @Enumerated(EnumType.STRING)
-    private Type type;
+    private InventoryType type;
+
+    @OneToMany(mappedBy = "inventory",cascade = CascadeType.ALL,fetch = FetchType.LAZY,orphanRemoval = true)
+    private List<ProductInventory> productInventories;
+
+    @OneToMany(mappedBy = "inventory",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<InventoryTransaction> inventoryTransactions;
+
+
 
 }

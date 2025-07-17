@@ -53,7 +53,7 @@ public class AuthService {
         user.setAddress(request.getAddress());
         user.setPhone(request.getPhone());
         user.setLastLoginDate(null);
-        user.setCreationDate(LocalDateTime.now());
+        user.setCreatedAt(LocalDateTime.now());
         user.setStatus(Status.INACTIVE);
         user.setIsEnabled(false);
         user.setIsDeleted(false);

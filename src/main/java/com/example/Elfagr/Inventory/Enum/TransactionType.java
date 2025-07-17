@@ -1,5 +1,5 @@
 package com.example.Elfagr.Inventory.Enum;
 
-public enum Type {
-    STORAGE,MAINTENANCE;
+public enum TransactionType {
+    IN,OUT;
 }
