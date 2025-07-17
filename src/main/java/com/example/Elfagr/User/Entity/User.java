@@ -80,7 +80,7 @@ public class User implements UserDetails {
     private String address;
 
     @Column(updatable = false)
-    private LocalDateTime creationDate;
+    private LocalDateTime createdAt;
 
     private LocalDateTime lastLoginDate;
 

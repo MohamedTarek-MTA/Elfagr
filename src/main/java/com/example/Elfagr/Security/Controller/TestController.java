@@ -18,8 +18,8 @@ public class TestController {
     public ResponseEntity<?> adminAPI(@AuthenticationPrincipal User userDetails){
         return ResponseEntity.ok(userDetails.getId()+" "+userDetails.getEmail()+"Hello Admin !");
     }
-    @PreAuthorize("hasRole('MEMBER')")
-    @GetMapping("/member")
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user")
     public ResponseEntity<?> memberAPI(@AuthenticationPrincipal User userDetails){
         return ResponseEntity.ok(userDetails.getId()+" "+userDetails.getEmail()+"Hello Member !");
     }
