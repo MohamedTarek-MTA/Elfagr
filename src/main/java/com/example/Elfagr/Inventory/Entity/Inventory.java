@@ -2,7 +2,9 @@ package com.example.Elfagr.Inventory.Entity;
 
 import com.example.Elfagr.Inventory.Enum.InventoryType;
 import com.example.Elfagr.Inventory.Enum.Status;
+import com.example.Elfagr.Order.Entity.OrderItem;
 import com.example.Elfagr.Product.Entity.ProductInventory;
+import com.example.Elfagr.Return.Entity.ReturnItem;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -55,6 +57,10 @@ public class Inventory {
     @OneToMany(mappedBy = "inventory",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<InventoryTransaction> inventoryTransactions;
 
+    @OneToMany(mappedBy = "inventory",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems;
 
+    @OneToMany(mappedBy = "inventory",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<ReturnItem> returnItems;
 
 }

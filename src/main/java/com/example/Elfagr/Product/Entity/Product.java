@@ -1,5 +1,7 @@
 package com.example.Elfagr.Product.Entity;
 
+import com.example.Elfagr.Order.Entity.OrderItem;
+import com.example.Elfagr.Return.Entity.ReturnItem;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -60,4 +62,10 @@ public class Product {
     @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id",nullable = false)
     private Category category;
+
+    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,fetch = FetchType.LAZY,orphanRemoval = true)
+    private List<OrderItem> orderItems;
+
+    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<ReturnItem> returnItems;
 }

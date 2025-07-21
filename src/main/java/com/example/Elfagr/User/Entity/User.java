@@ -2,6 +2,8 @@ package com.example.Elfagr.User.Entity;
 
 
 import com.example.Elfagr.Inventory.Entity.InventoryTransaction;
+import com.example.Elfagr.Order.Entity.Order;
+import com.example.Elfagr.Return.Entity.Return;
 import com.example.Elfagr.User.Enum.Gender;
 import com.example.Elfagr.User.Enum.Role;
 import com.example.Elfagr.User.Enum.Status;
@@ -94,6 +96,12 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<InventoryTransaction> inventoryTransactions;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Order> orders;
+
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Return> returns;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
