@@ -31,6 +31,10 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request){
         return ResponseEntity.ok(authService.resetPassword(request));
     }
+    @PostMapping("/resend-code")
+    public ResponseEntity<?> resendCode(@RequestBody String email){
+        return ResponseEntity.ok(authService.resendVerificationCode(email));
+    }
     @GetMapping("/say-hello")
     public ResponseEntity<?> sayHello(){
         return ResponseEntity.ok("Hello !");

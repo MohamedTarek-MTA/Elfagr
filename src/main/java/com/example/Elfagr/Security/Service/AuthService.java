@@ -15,6 +15,8 @@ import com.example.Elfagr.User.Service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -58,7 +60,7 @@ public class AuthService {
         user.setIsEnabled(false);
         user.setIsDeleted(false);
         user.setImageUrl(null);
-        String code = String.valueOf(100000 + new Random().nextInt(999999));
+        String code = generateCode();
         user.setVerificationCode(code);
         log.info(String.valueOf(user));
         userRepository.save(user);
@@ -67,16 +69,20 @@ public class AuthService {
         return "Please Check Your Email to Get Verification Code !! ";
     }
 
+    @CacheEvict(value = "usersByEmail", key = "#dto.getEmail()")
     public String verifyEmail(MailDTO dto){
 
-        var user = userService.getUserByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Incorrect Email !!"));
+        log.info(String.valueOf(dto.getVerificationCode()));
+        log.info(String.valueOf(dto.getEmail()));
+        var user = userRepository.findByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Incorrect Email !!"));
         if(!user.getVerificationCode().equals(dto.getVerificationCode())){
+            log.warn(user.getVerificationCode());
+            log.warn(user.getEmail());
             throw new IllegalArgumentException("Code Didn't Match !!");
         }
-        user.setIsEnabled(true);
+
         user.setVerificationCode(null);
-        user.setStatus(Status.ACTIVE);
-        log.info(String.valueOf(user));
+        userService.activeUser(user.getId());
         userRepository.save(user);
         return "Your Account Has Been Verified Successfully !";
     }
@@ -113,5 +119,16 @@ public class AuthService {
         log.info(request.getNewPassword());
         userRepository.save(user);
         return "Password Changed Successfully !";
+    }
+
+    @CachePut(value = "users",key = "#email")
+    public String resendVerificationCode(String email){
+        var user = userService.getUserByEmail(email).orElseThrow(()->new IllegalArgumentException("Email Not Found !"));
+        user.setVerificationCode(generateCode());
+        userRepository.save(user);
+        return "Please Check Your Email to Get Verification Code !!";
+    }
+    private String generateCode(){
+        return String.valueOf(100000 + new Random().nextInt(999999));
     }
 }

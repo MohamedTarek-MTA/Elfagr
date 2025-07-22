@@ -10,6 +10,7 @@ import com.example.Elfagr.User.Mapper.UserMapper;
 import com.example.Elfagr.User.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -82,6 +83,7 @@ public class UserService {
         return updateUserStatus(id, Status.BANNED, false, false);
     }
 
+    @CacheEvict(value = "usersById",key = "#id")
     public UserDTO deleteUser(Long id) {
         return updateUserStatus(id, Status.INACTIVE, true, false);
     }
