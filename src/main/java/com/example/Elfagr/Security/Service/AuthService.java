@@ -3,10 +3,7 @@ package com.example.Elfagr.Security.Service;
 import com.example.Elfagr.Mail.DTO.MailDTO;
 import com.example.Elfagr.Mail.Mapper.MailMapper;
 import com.example.Elfagr.Mail.Service.MailService;
-import com.example.Elfagr.Security.DTO.AuthRequest;
-import com.example.Elfagr.Security.DTO.AuthResponse;
-import com.example.Elfagr.Security.DTO.RegisterRequest;
-import com.example.Elfagr.Security.DTO.ResetPasswordRequest;
+import com.example.Elfagr.Security.DTO.*;
 import com.example.Elfagr.Security.Util.JwtUtil;
 import com.example.Elfagr.User.Entity.User;
 import com.example.Elfagr.User.Enum.Status;
@@ -15,15 +12,14 @@ import com.example.Elfagr.User.Service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -45,31 +41,39 @@ public class AuthService {
         if(userService.isPhoneExists(request.getPhone())){
             throw new IllegalArgumentException("This Phone Number Already Exists !");
         }
-        var user = new User();
-        user.setName(request.getFirstName()+" "+request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setBirthdate(request.getBirthdate());
-        user.setRole(request.getRole());
-        user.setGender(request.getGender());
-        user.setAddress(request.getAddress());
-        user.setPhone(request.getPhone());
-        user.setLastLoginDate(null);
-        user.setCreatedAt(LocalDateTime.now());
-        user.setStatus(Status.INACTIVE);
-        user.setIsEnabled(false);
-        user.setIsDeleted(false);
-        user.setImageUrl(null);
-        String code = generateCode();
-        user.setVerificationCode(code);
-        log.info(String.valueOf(user));
-        userRepository.save(user);
-        var mailRequest = MailMapper.toDTO(user.getEmail(),code);
-        mailService.sendCodeToViaEmail(mailRequest);
-        return "Please Check Your Email to Get Verification Code !! ";
+        try{
+            String code = generateCode();
+            User user = User.builder()
+                    .name(request.getFirstName()+" "+request.getLastName())
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .phone(request.getPhone())
+                    .birthdate(request.getBirthdate())
+                    .role(request.getRole())
+                    .gender(request.getGender())
+                    .address(request.getAddress())
+                    .lastLoginDate(null)
+                    .createdAt(LocalDateTime.now())
+                    .status(Status.INACTIVE)
+                    .isEnabled(false)
+                    .isDeleted(false)
+                    .deletedAt(null)
+                    .imageUrl(null)
+                    .verificationCode(code)
+                    .build();
+            userRepository.save(user);
+            var mailRequest = MailMapper.toDTO(user.getEmail(),code);
+            mailService.sendCodeToViaEmail(mailRequest);
+            return "Please Check Your Email to Get Verification Code !! ";
+        }
+        catch (Exception e){
+            log.error("Error occurred while registering user", e);
+            throw new RuntimeException("An unexpected error occurred. Please try again later.");
+        }
+
     }
 
-    @CacheEvict(value = "usersByEmail", key = "#dto.getEmail()")
+
     public String verifyEmail(MailDTO dto){
 
         log.info(String.valueOf(dto.getVerificationCode()));
@@ -83,7 +87,6 @@ public class AuthService {
 
         user.setVerificationCode(null);
         userService.activeUser(user.getId());
-        userRepository.save(user);
         return "Your Account Has Been Verified Successfully !";
     }
     public AuthResponse login(AuthRequest request){
@@ -95,7 +98,7 @@ public class AuthService {
             throw new IllegalArgumentException("This Account Has Been Deleted !");
         }
         if(!user.getStatus().equals(Status.ACTIVE)){
-            throw new IllegalArgumentException("This Account Can't Login Because it's "+user.getStatus().name());
+            throw new IllegalArgumentException("Your account is currently " + user.getStatus().name().toLowerCase() + ". Please verify or contact support.");
         }
         String token = jwtUtil.generateToken(user.getId(),user.getEmail(),user.getRole().name(),user.getStatus().name());
         userService.updateLastLoginDate(user.getId());
@@ -116,19 +119,28 @@ public class AuthService {
             throw new IllegalArgumentException("Passwords Don't Match !");
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        log.info(request.getNewPassword());
         userRepository.save(user);
         return "Password Changed Successfully !";
     }
 
-    @CachePut(value = "users",key = "#email")
-    public String resendVerificationCode(String email){
-        var user = userService.getUserByEmail(email).orElseThrow(()->new IllegalArgumentException("Email Not Found !"));
-        user.setVerificationCode(generateCode());
-        userRepository.save(user);
-        return "Please Check Your Email to Get Verification Code !!";
+    @CachePut(value = "users",key = "#dto.email")
+    public String resendVerificationCode(ResendCodeDTO dto){
+        var user = userService.getUserByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Email Not Found !"));
+        try{
+            String code = generateCode();
+            user.setVerificationCode(code);
+            userRepository.save(user);
+            var mailRequest = MailMapper.toDTO(user.getEmail(),code);
+            mailService.sendCodeToViaEmail(mailRequest);
+            return "Please Check Your Email to Get Verification Code !!";
+        }
+        catch (Exception e){
+            throw new RuntimeException("Something Wrong happened please try again ",e.getCause());
+        }
     }
     private String generateCode(){
-        return String.valueOf(100000 + new Random().nextInt(999999));
+        SecureRandom secureRandom = new SecureRandom();
+        int code = 100000 + secureRandom.nextInt(900000); // ensures 6-digit number
+        return String.valueOf(code);
     }
 }

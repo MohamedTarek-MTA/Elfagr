@@ -3,9 +3,11 @@ package com.example.Elfagr.Security.Controller;
 import com.example.Elfagr.Mail.DTO.MailDTO;
 import com.example.Elfagr.Security.DTO.AuthRequest;
 import com.example.Elfagr.Security.DTO.RegisterRequest;
+import com.example.Elfagr.Security.DTO.ResendCodeDTO;
 import com.example.Elfagr.Security.DTO.ResetPasswordRequest;
 import com.example.Elfagr.Security.Service.AuthService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +34,8 @@ public class AuthController {
         return ResponseEntity.ok(authService.resetPassword(request));
     }
     @PostMapping("/resend-code")
-    public ResponseEntity<?> resendCode(@RequestBody String email){
-        return ResponseEntity.ok(authService.resendVerificationCode(email));
+    public ResponseEntity<?> resendCode(@Valid @RequestBody ResendCodeDTO request){
+        return ResponseEntity.ok(authService.resendVerificationCode(request));
     }
     @GetMapping("/say-hello")
     public ResponseEntity<?> sayHello(){
