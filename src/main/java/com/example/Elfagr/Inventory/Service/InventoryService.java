@@ -43,6 +43,8 @@ public class InventoryService {
         if(Boolean.TRUE.equals(isDeleted)){
             inventory.setDeletedAt(LocalDateTime.now());
         }
+        inventory.setUpdatedAt(LocalDateTime.now());
+
         inventoryRepository.save(inventory);
         return InventoryMapper.toDTO(inventory);
     }
