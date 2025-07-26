@@ -7,7 +7,6 @@ import com.example.Elfagr.Security.DTO.ResendCodeDTO;
 import com.example.Elfagr.Security.DTO.ResetPasswordRequest;
 import com.example.Elfagr.Security.Service.AuthService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
