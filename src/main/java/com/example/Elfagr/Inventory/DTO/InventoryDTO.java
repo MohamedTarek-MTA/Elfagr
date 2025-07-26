@@ -5,6 +5,7 @@ import com.example.Elfagr.Inventory.Enum.Status;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class InventoryDTO {
+public class InventoryDTO implements Serializable {
     private Long id;
     @NotBlank
     private String name;

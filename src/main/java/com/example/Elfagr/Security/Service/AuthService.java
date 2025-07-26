@@ -12,7 +12,9 @@ import com.example.Elfagr.User.Service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.Cascade;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -74,11 +76,12 @@ public class AuthService {
     }
 
 
+
     public String verifyEmail(MailDTO dto){
 
         log.info(String.valueOf(dto.getVerificationCode()));
         log.info(String.valueOf(dto.getEmail()));
-        var user = userRepository.findByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Incorrect Email !!"));
+        var user = userService.getUserByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Incorrect Email !!"));
         if(!user.getVerificationCode().equals(dto.getVerificationCode())){
             log.warn(user.getVerificationCode());
             log.warn(user.getEmail());
@@ -89,6 +92,7 @@ public class AuthService {
         userService.activeUser(user.getId());
         return "Your Account Has Been Verified Successfully !";
     }
+
     public AuthResponse login(AuthRequest request){
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword())
@@ -104,6 +108,7 @@ public class AuthService {
         userService.updateLastLoginDate(user.getId());
         return new AuthResponse(token);
     }
+
     public String resetPassword(ResetPasswordRequest request){
         var user = userService.getUserByEmail(request.getEmail()).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
         if(user.getIsDeleted()){
@@ -123,7 +128,7 @@ public class AuthService {
         return "Password Changed Successfully !";
     }
 
-    @CachePut(value = "users",key = "#dto.email")
+
     public String resendVerificationCode(ResendCodeDTO dto){
         var user = userService.getUserByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Email Not Found !"));
         try{

@@ -7,6 +7,7 @@ import com.example.Elfagr.Return.Entity.Return;
 import com.example.Elfagr.User.Enum.Gender;
 import com.example.Elfagr.User.Enum.Role;
 import com.example.Elfagr.User.Enum.Status;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -90,8 +91,10 @@ public class User implements UserDetails {
 
     private LocalDateTime deletedAt;
 
+    @JsonProperty("enabled")
     private Boolean isEnabled;
 
+    @JsonProperty("deleted")
     private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)

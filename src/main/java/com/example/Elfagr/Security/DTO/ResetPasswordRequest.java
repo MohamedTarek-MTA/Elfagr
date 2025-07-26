@@ -5,12 +5,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResetPasswordRequest {
+public class ResetPasswordRequest implements Serializable {
     @NotBlank
     @Email(message = "Please insert valid email")
     private String email;

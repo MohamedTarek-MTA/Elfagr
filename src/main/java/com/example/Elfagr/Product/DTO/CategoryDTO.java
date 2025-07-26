@@ -4,6 +4,7 @@ import com.example.Elfagr.Product.Enum.CategoryStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CategoryDTO {
+public class CategoryDTO implements Serializable {
     private Long id;
     @NotBlank
 
