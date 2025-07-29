@@ -21,19 +21,4 @@ public class InventoryMapper {
                 .isDeleted(inventory.getIsDeleted())
                 .build();
     }
-//    public static Inventory toEntity(InventoryDTO dto){
-//        return Inventory.builder()
-//                .Id(dto.getId())
-//                .name(dto.getName())
-//                .contactInfo(dto.getContactInfo())
-//                .type(dto.getInventoryType())
-//                .status(dto.getStatus())
-//                .description(dto.getDescription())
-//                .address(dto.getAddress())
-//                .updatedAt(dto.getUpdatedAt())
-//                .createdAt(dto.getCreatedAt())
-//                .deletedAt(dto.getDeletedAt())
-//                .isDeleted(dto.getIsDeleted())
-//                .build();
-//    }
 }

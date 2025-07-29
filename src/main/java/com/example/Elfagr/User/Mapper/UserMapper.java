@@ -29,26 +29,26 @@ public class UserMapper {
                 user.getLastLoginDate()
         );
     }
-    public static User toEntity(UserDTO user,String password , String verificationCode , LocalDateTime deletedAt,Boolean isDeleted){
-        return User.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .password(password)
-                .address(user.getAddress())
-                .birthdate(user.getBirthdate())
-                .phone(user.getPhone())
-                .role(user.getRole())
-                .gender(user.getGender())
-                .imageUrl(user.getImageUrl())
-                .status(user.getStatus())
-                .isEnabled(user.getIsEnabled())
-                .isDeleted(user.getIsDeleted())
-                .createdAt(user.getCreatedAt())
-                .lastLoginDate(user.getLastLoginDate())
-                .deletedAt(user.getDeletedAt())
-                .verificationCode(verificationCode)
-                .build();
-
-    }
+//    public static User toEntity(UserDTO user,String password , String verificationCode , LocalDateTime deletedAt,Boolean isDeleted){
+//        return User.builder()
+//                .id(user.getId())
+//                .name(user.getName())
+//                .email(user.getEmail())
+//                .password(password)
+//                .address(user.getAddress())
+//                .birthdate(user.getBirthdate())
+//                .phone(user.getPhone())
+//                .role(user.getRole())
+//                .gender(user.getGender())
+//                .imageUrl(user.getImageUrl())
+//                .status(user.getStatus())
+//                .isEnabled(user.getIsEnabled())
+//                .isDeleted(user.getIsDeleted())
+//                .createdAt(user.getCreatedAt())
+//                .lastLoginDate(user.getLastLoginDate())
+//                .deletedAt(user.getDeletedAt())
+//                .verificationCode(verificationCode)
+//                .build();
+//
+//    }
 }

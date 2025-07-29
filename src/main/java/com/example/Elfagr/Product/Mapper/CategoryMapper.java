@@ -19,16 +19,4 @@ public class CategoryMapper {
                 .isDeleted(category.getIsDeleted())
                 .build();
     }
-//    private static Category toEntity(CategoryDTO dto){
-//        return Category.builder()
-//                .id(dto.getId())
-//                .name(dto.getName())
-//                .status(dto.getStatus())
-//                .createdAt(dto.getCreatedAt())
-//                .updatedAt(dto.getUpdatedAt())
-//                .description(dto.getDescription())
-//                .deletedAt(dto.getDeletedAt())
-//                .isDeleted(dto.getIsDeleted())
-//                .build();
-//    }
 }
