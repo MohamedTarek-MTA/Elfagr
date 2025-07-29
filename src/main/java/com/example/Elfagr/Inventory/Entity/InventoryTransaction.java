@@ -4,6 +4,7 @@ import com.example.Elfagr.Inventory.Enum.TransactionReason;
 import com.example.Elfagr.Inventory.Enum.TransactionType;
 import com.example.Elfagr.Product.Entity.Product;
 import com.example.Elfagr.User.Entity.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -38,7 +39,7 @@ public class InventoryTransaction {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
-
+    @JsonProperty("deleted")
     private Boolean isDeleted;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)

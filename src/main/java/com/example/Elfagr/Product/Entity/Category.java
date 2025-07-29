@@ -1,6 +1,7 @@
 package com.example.Elfagr.Product.Entity;
 
 import com.example.Elfagr.Product.Enum.CategoryStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -37,7 +38,7 @@ public class Category {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
-
+    @JsonProperty("deleted")
     private Boolean isDeleted;
 
     @OneToMany(mappedBy = "category",cascade = CascadeType.ALL,fetch = FetchType.LAZY)

@@ -3,6 +3,7 @@ package com.example.Elfagr.Security.DTO;
 import com.example.Elfagr.User.Enum.Gender;
 import com.example.Elfagr.User.Enum.Role;
 import com.example.Elfagr.User.Enum.Status;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -46,5 +47,6 @@ public class RegisterRequest implements Serializable {
     private LocalDateTime lastLoginDate;
     private LocalDateTime creationDate;
     private String verificationCode;
-    private boolean isEnabled;
+    @JsonProperty("enabled")
+    private Boolean isEnabled;
 }

@@ -2,6 +2,7 @@ package com.example.Elfagr.Product.Entity;
 
 import com.example.Elfagr.Order.Entity.OrderItem;
 import com.example.Elfagr.Return.Entity.ReturnItem;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -51,9 +52,9 @@ public class Product {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
-
+    @JsonProperty("deleted")
     private Boolean isDeleted;
-
+    @JsonProperty("available")
     private Boolean isAvailable;
 
     @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,fetch = FetchType.LAZY,orphanRemoval = true)

@@ -1,6 +1,7 @@
 package com.example.Elfagr.Product.DTO;
 
 import com.example.Elfagr.Product.Enum.CategoryStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -28,6 +29,6 @@ public class CategoryDTO implements Serializable {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
-
+    @JsonProperty("deleted")
     private Boolean isDeleted;
 }

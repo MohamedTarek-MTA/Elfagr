@@ -2,6 +2,7 @@ package com.example.Elfagr.Return.Entity;
 
 import com.example.Elfagr.Order.Entity.Order;
 import com.example.Elfagr.User.Entity.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -46,7 +47,7 @@ public class Return {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
-
+    @JsonProperty("deleted")
     private Boolean isDeleted;
 
     @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)

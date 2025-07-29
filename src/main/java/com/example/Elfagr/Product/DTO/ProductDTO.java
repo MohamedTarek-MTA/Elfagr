@@ -1,5 +1,6 @@
 package com.example.Elfagr.Product.DTO;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -44,8 +45,8 @@ public class ProductDTO implements Serializable {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
-
+    @JsonProperty("deleted")
     private Boolean isDeleted;
-
+    @JsonProperty("available")
     private Boolean isAvailable;
 }

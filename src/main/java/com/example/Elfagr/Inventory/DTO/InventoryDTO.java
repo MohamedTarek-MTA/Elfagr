@@ -2,6 +2,7 @@ package com.example.Elfagr.Inventory.DTO;
 
 import com.example.Elfagr.Inventory.Enum.InventoryType;
 import com.example.Elfagr.Inventory.Enum.Status;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -26,6 +27,7 @@ public class InventoryDTO implements Serializable {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
+    @JsonProperty("deleted")
     private Boolean isDeleted;
     @NotBlank
     private Status status;

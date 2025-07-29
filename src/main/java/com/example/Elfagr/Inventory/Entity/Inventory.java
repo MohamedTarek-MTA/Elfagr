@@ -5,6 +5,7 @@ import com.example.Elfagr.Inventory.Enum.Status;
 import com.example.Elfagr.Order.Entity.OrderItem;
 import com.example.Elfagr.Product.Entity.ProductInventory;
 import com.example.Elfagr.Return.Entity.ReturnItem;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -42,7 +43,7 @@ public class Inventory {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
-
+    @JsonProperty("deleted")
     private Boolean isDeleted;
 
     @Enumerated(EnumType.STRING)
