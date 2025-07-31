@@ -6,6 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ReturnDTO {
+public class ReturnDTO implements Serializable {
     private Long id;
     @NotBlank
     private Long orderId;
