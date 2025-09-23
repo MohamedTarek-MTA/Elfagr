@@ -60,6 +60,7 @@ public class CategoryService {
         );
     }
 
+    @Transactional
     public CategoryDTO updateCategoryStatus(Long id, CategoryStatus status, Boolean isDeleted) {
         var category = categoryRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Category Not Found !"));
 
