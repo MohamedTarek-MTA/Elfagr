@@ -34,7 +34,6 @@ public class ProductMapper {
                 .sku(product.getSku())
                 .barcode(product.getBarcode())
                 .price(product.getPrice())
-                .stockQuantity(product.getStockQuantity())
                 .description(product.getDescription())
                 .imageUrl(product.getImageUrl())
                 .isAvailable(product.getIsAvailable())
@@ -71,7 +70,6 @@ public class ProductMapper {
                 .sku(productDTO.getSku())
                 .barcode(productDTO.getBarcode())
                 .price(productDTO.getPrice())
-                .stockQuantity(productDTO.getStockQuantity() != null ? productDTO.getStockQuantity() : 0)
                 .description(productDTO.getDescription())
                 .imageUrl(productDTO.getImageUrl())
                 .isAvailable(productDTO.getIsAvailable() != null ? productDTO.getIsAvailable() : true)
@@ -107,9 +105,6 @@ public class ProductMapper {
         if (productDTO.getPrice() != null) {
             existingProduct.setPrice(productDTO.getPrice());
         }
-        if (productDTO.getStockQuantity() != null) {
-            existingProduct.setStockQuantity(productDTO.getStockQuantity());
-        }
         if (productDTO.getDescription() != null) {
             existingProduct.setDescription(productDTO.getDescription());
         }
@@ -141,7 +136,6 @@ public class ProductMapper {
                 .sku(productDTO.getSku())
                 .barcode(productDTO.getBarcode())
                 .price(productDTO.getPrice())
-                .stockQuantity(productDTO.getStockQuantity() != null ? productDTO.getStockQuantity() : 0)
                 .description(productDTO.getDescription())
                 .imageUrl(productDTO.getImageUrl())
                 .isAvailable(true)

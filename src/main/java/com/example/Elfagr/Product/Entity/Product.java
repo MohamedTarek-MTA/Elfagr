@@ -45,8 +45,6 @@ public class Product {
 
     private String imageUrl;
 
-    private Integer stockQuantity;
-
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
