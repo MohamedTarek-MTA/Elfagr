@@ -29,6 +29,11 @@ public class ProductInventoryMapper {
                 .inventoryId(productInventory.getInventory() != null ? productInventory.getInventory().getId() : null)
                 .productId(productInventory.getProduct() != null ? productInventory.getProduct().getId() : null)
                 .quantity(productInventory.getQuantity())
+                .createdAt(productInventory.getCreatedAt())
+                .updatedAt(productInventory.getUpdatedAt())
+                .deletedAt(productInventory.getDeletedAt())
+                .isAvailable(productInventory.getIsAvailable())
+                .isDeleted(productInventory.getIsDeleted())
                 .build();
     }
 
@@ -49,6 +54,11 @@ public class ProductInventoryMapper {
                 .inventory(inventory)
                 .product(product)
                 .quantity(productInventoryDTO.getQuantity() != null ? productInventoryDTO.getQuantity() : 0)
+                .createdAt(productInventoryDTO.getCreatedAt())
+                .updatedAt(productInventoryDTO.getUpdatedAt())
+                .deletedAt(productInventoryDTO.getDeletedAt())
+                .isAvailable(productInventoryDTO.getIsAvailable())
+                .isDeleted(productInventoryDTO.getIsDeleted())
                 .build();
     }
 

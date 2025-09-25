@@ -1,10 +1,12 @@
 package com.example.Elfagr.Product.DTO;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -20,4 +22,14 @@ public class ProductInventoryDTO implements Serializable {
     @NotBlank
     @Min(1)
     private Integer quantity;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    private LocalDateTime deletedAt;
+    @JsonProperty("deleted")
+    private Boolean isDeleted;
+    @JsonProperty("available")
+    private Boolean isAvailable;
 }

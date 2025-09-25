@@ -11,10 +11,12 @@ import com.example.Elfagr.Product.Repository.ProductRepository;
 import com.example.Elfagr.Shared.Service.UploadImageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 
 @Service
@@ -53,6 +55,8 @@ public class ProductService {
                     .product(product)
                     .quantity(dto.getStockQuantity())
                     .inventory(inventory)
+                    .createdAt(LocalDateTime.now())
+                    .isAvailable(dto.getIsAvailable())
                     .build();
            return productInventoryRepository.save(newProductInventory);
         });
@@ -60,6 +64,37 @@ public class ProductService {
        ProductDTO productDTO = ProductMapper.toDTO(product,category.getId(),inventory.getId());
         productDTO.setStockQuantity(productInventory.getQuantity());
         return productDTO;
+    }
+    @Transactional
+    @CachePut(key = "#productId",value = "products")
+    public String updateProduct(Long productId,ProductDTO dto,MultipartFile image){
+        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        Optional.ofNullable(dto.getName()).ifPresent(product::setName);
+        Optional.ofNullable(dto.getPrice()).ifPresent(product::setPrice);
+        Optional.ofNullable(dto.getSku()).ifPresent(product::setSku);
+        Optional.ofNullable(dto.getDescription()).ifPresent(product::setDescription);
+        if(image != null && !image.isEmpty()){
+            String imageUrl = uploadImageService.uploadMultipartFile(image);
+            product.setImageUrl(imageUrl);
+        }
+        product.setUpdatedAt(LocalDateTime.now());
+        return "Product Successfully Updated !";
+    }
+    @Transactional
+    @CachePut(value = "products",key = "#productId")
+    public String changeProductCategory(Long categoryId,Long productId){
+        var category = categoryRepository.findById(categoryId).orElseThrow(()->new IllegalArgumentException("Category Not Found !"));
+        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        product.setCategory(category);
+        product.setUpdatedAt(LocalDateTime.now());
+        return "Product Category Successfully Updated !";
+    }
+    @Transactional
+    public String changeProductStockQuantity(Long productId,Long inventoryId,Integer quantity){
+        var productInventory = productInventoryRepository.findByProductIdAndInventoryId(productId,inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found in this Inventory !"));
+        productInventory.setQuantity(quantity);
+        productInventoryRepository.save(productInventory);
+        return "Product Stock Quantity has been Changed !";
     }
 
 }
