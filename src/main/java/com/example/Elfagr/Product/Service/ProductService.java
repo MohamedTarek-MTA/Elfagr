@@ -21,9 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 
 @Service
@@ -122,13 +121,48 @@ public class ProductService {
     public Page<ProductDTO> getProductsByCategoryId(Long categoryId,Pageable pageable){
         return productRepository.findByCategoryId(categoryId,pageable).map(product -> ProductMapper.toDTO(product,categoryId,null));
     }
-    public List<InventoryDTO> getInventoriesByProductId(Long productId){
+    //move this method to inventory service
+    public Page<InventoryDTO> getInventoriesByProductId(Long productId,Pageable pageable){
         var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
-        var productInventories = productInventoryRepository.findByProductId(productId,null);
-        return productInventories.stream().map(inventory ->
+        var productInventories = productInventoryRepository.findByProductId(productId,pageable);
+        return productInventories.map(inventory ->
                 InventoryMapper.toDTO(
                         inventoryRepository.findById(
                                 inventory.getId()).orElseThrow(
-                                        ()->new IllegalArgumentException("Inventory Not Found !")))).toList();
+                                        ()->new IllegalArgumentException("Inventory Not Found !"))));
     }
+    public Page<ProductDTO> getAllProductsByInventoryId(Long inventoryId,Pageable pageable){
+        var inventory = inventoryRepository.findById(inventoryId).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
+        var productInventories = productInventoryRepository.findByInventoryId(inventoryId,pageable);
+        return productInventories.map(product ->
+                ProductMapper.toDTO(
+                        productRepository.findById(
+                            product.getId()).orElseThrow(()->
+                                new IllegalArgumentException("Product Not Found !"))));
+    }
+    @Cacheable(value = "products",key = "#sku")
+    public ProductDTO getProductBySkuAndInventoryId(String sku,Long inventoryId){
+        var product = productRepository.findBySkuOrBarcode(sku,null).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
+        var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
+        productDTO.setStockQuantity(productInventory.getQuantity());
+        return productDTO;
+    }
+    @Cacheable(value = "products",key = "#barcode")
+    public ProductDTO getProductByBarcodeAndInventoryId(String barcode,Long inventoryId){
+        var product = productRepository.findBySkuOrBarcode(null,barcode).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
+        var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
+        productDTO.setStockQuantity(productInventory.getQuantity());
+        return productDTO;
+    }
+    public Page<ProductDTO> getProductByName(String name,Pageable pageable){
+        var products = productRepository.findByNameIgnoreCase(name,pageable);
+        return products.map(ProductMapper::toDTO);
+    }
+    public Page<ProductDTO> getProductsByCategoryName(String name , Pageable pageable){
+        var products = productRepository.findByCategoryNameIgnoreCase(name,pageable);
+        return products.map(ProductMapper::toDTO);
+    }
+
 }
