@@ -1,5 +1,7 @@
 package com.example.Elfagr.Product.Service;
 
+import com.example.Elfagr.Inventory.DTO.InventoryDTO;
+import com.example.Elfagr.Inventory.Mapper.InventoryMapper;
 import com.example.Elfagr.Inventory.Repository.InventoryRepository;
 import com.example.Elfagr.Product.DTO.ProductDTO;
 import com.example.Elfagr.Product.Entity.Product;
@@ -12,11 +14,16 @@ import com.example.Elfagr.Shared.Service.UploadImageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -96,5 +103,32 @@ public class ProductService {
         productInventoryRepository.save(productInventory);
         return "Product Stock Quantity has been Changed !";
     }
-
+    public Page<ProductDTO> getAllProducts(Pageable pageable){
+        var products = productRepository.findAll(pageable);
+        return products.map(ProductMapper::toDTO);
+    }
+    @Cacheable(value = "products",key = "#productId")
+    public ProductDTO getProductById(Long productId){
+        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var productInventories = productInventoryRepository.findByProductId(productId,null);
+        Integer totalAmount = 0;
+        for(var productInventory : productInventories){
+            totalAmount += productInventory.getQuantity();
+        }
+        var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),null);
+        productDTO.setStockQuantity(totalAmount);
+        return productDTO;
+    }
+    public Page<ProductDTO> getProductsByCategoryId(Long categoryId,Pageable pageable){
+        return productRepository.findByCategoryId(categoryId,pageable).map(product -> ProductMapper.toDTO(product,categoryId,null));
+    }
+    public List<InventoryDTO> getInventoriesByProductId(Long productId){
+        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var productInventories = productInventoryRepository.findByProductId(productId,null);
+        return productInventories.stream().map(inventory ->
+                InventoryMapper.toDTO(
+                        inventoryRepository.findById(
+                                inventory.getId()).orElseThrow(
+                                        ()->new IllegalArgumentException("Inventory Not Found !")))).toList();
+    }
 }
