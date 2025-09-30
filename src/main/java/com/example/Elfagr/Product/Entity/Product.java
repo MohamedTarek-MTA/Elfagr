@@ -1,6 +1,7 @@
 package com.example.Elfagr.Product.Entity;
 
 import com.example.Elfagr.Order.Entity.OrderItem;
+import com.example.Elfagr.Product.Enum.ProductStatus;
 import com.example.Elfagr.Return.Entity.ReturnItem;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -54,6 +55,9 @@ public class Product {
     private Boolean isDeleted;
     @JsonProperty("available")
     private Boolean isAvailable;
+    @NotBlank
+    @Enumerated(EnumType.STRING)
+    private ProductStatus status;
 
     @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,fetch = FetchType.LAZY,orphanRemoval = true)
     private List<ProductInventory> productInventories;

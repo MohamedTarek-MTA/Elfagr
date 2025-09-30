@@ -1,5 +1,6 @@
 package com.example.Elfagr.Product.DTO;
 
+import com.example.Elfagr.Product.Enum.ProductStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
@@ -35,6 +36,8 @@ public class ProductDTO implements Serializable {
 
     @NotBlank
     private BigDecimal price;
+    @NotBlank
+    private ProductStatus productStatus;
 
     private String imageUrl;
 
