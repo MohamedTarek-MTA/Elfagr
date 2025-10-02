@@ -6,6 +6,8 @@ import com.example.Elfagr.Inventory.Enum.InventoryType;
 import com.example.Elfagr.Inventory.Enum.Status;
 import com.example.Elfagr.Inventory.Mapper.InventoryMapper;
 import com.example.Elfagr.Inventory.Repository.InventoryRepository;
+import com.example.Elfagr.Product.Repository.ProductInventoryRepository;
+import com.example.Elfagr.Product.Repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -23,6 +25,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class InventoryService {
     private final InventoryRepository inventoryRepository;
+    private final ProductRepository productRepository;
+    private final ProductInventoryRepository productInventoryRepository;
 
     @Cacheable(value = "inventories",key = "#id")
     public InventoryDTO getInventoryById(Long id){
@@ -125,5 +129,13 @@ public class InventoryService {
 
         return inventories.map(InventoryMapper::toDTO);
     }
-
+    public Page<InventoryDTO> getInventoriesByProductId(Long productId,Pageable pageable){
+        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var productInventories = productInventoryRepository.findByProductId(productId,pageable);
+        return productInventories.map(inventory ->
+                InventoryMapper.toDTO(
+                        inventoryRepository.findById(
+                                inventory.getId()).orElseThrow(
+                                ()->new IllegalArgumentException("Inventory Not Found !"))));
+    }
 }

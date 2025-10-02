@@ -65,20 +65,14 @@ public class UserController {
     public ResponseEntity<?> getUserByEmail(@RequestParam String email){
         var user = userService.getUserByEmail(email);
 
-        if (user.isPresent()) {
-            return ResponseEntity.ok(UserMapper.toDTO(user.get()));
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found !");
+            return ResponseEntity.ok(UserMapper.toDTO(user));
+
     }
     @GetMapping("/user/phone")
     public ResponseEntity<?> getUserByPhone(@RequestParam String phone){
         var user = userService.getUserByPhone(phone);
 
-        if(user.isPresent()){
-            return ResponseEntity.ok(UserMapper.toDTO(user.get()));
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found !");
-    }
+        return ResponseEntity.ok(UserMapper.toDTO(user)); }
     @GetMapping
     public ResponseEntity<Page<UserDTO>> getAllUsers(@RequestParam(defaultValue = "0") @Min(0) int page ,
                                                      @RequestParam(defaultValue = "10") @Min(1) int size ,

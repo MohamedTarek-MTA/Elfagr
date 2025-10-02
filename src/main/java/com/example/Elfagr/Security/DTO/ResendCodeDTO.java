@@ -11,7 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ResendCodeDTO  {
+public class ResendCodeDTO  implements Serializable{
     @NotBlank @Email(message = "Please insert valid email ")
     private String email;
 }

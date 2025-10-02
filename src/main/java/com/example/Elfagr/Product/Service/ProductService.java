@@ -1,18 +1,25 @@
 package com.example.Elfagr.Product.Service;
 
-import com.example.Elfagr.Inventory.DTO.InventoryDTO;
+
+import com.example.Elfagr.Inventory.Entity.InventoryTransaction;
 import com.example.Elfagr.Inventory.Enum.Status;
-import com.example.Elfagr.Inventory.Mapper.InventoryMapper;
+import com.example.Elfagr.Inventory.Enum.TransactionReason;
+import com.example.Elfagr.Inventory.Enum.TransactionType;
+import com.example.Elfagr.Inventory.Mapper.InventoryTransactionMapper;
 import com.example.Elfagr.Inventory.Repository.InventoryRepository;
+import com.example.Elfagr.Inventory.Service.InventoryTransactionService;
 import com.example.Elfagr.Product.DTO.ProductDTO;
+import com.example.Elfagr.Product.DTO.ProductInventoryDTO;
 import com.example.Elfagr.Product.Entity.Product;
 import com.example.Elfagr.Product.Entity.ProductInventory;
 import com.example.Elfagr.Product.Enum.ProductStatus;
+import com.example.Elfagr.Product.Mapper.ProductInventoryMapper;
 import com.example.Elfagr.Product.Mapper.ProductMapper;
 import com.example.Elfagr.Product.Repository.CategoryRepository;
 import com.example.Elfagr.Product.Repository.ProductInventoryRepository;
 import com.example.Elfagr.Product.Repository.ProductRepository;
 import com.example.Elfagr.Shared.Service.UploadImageService;
+import com.example.Elfagr.User.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
@@ -35,6 +42,8 @@ public class ProductService {
     private final InventoryRepository inventoryRepository;
     private final UploadImageService uploadImageService;
     private final ProductInventoryRepository productInventoryRepository;
+    private final InventoryTransactionService inventoryTransactionService;
+    private final UserRepository userRepository;
     @Transactional
     public ProductDTO createProduct(ProductDTO dto, MultipartFile image){
         if(dto.getCategoryId() == null || dto.getInventoryId() == null)
@@ -71,6 +80,15 @@ public class ProductService {
                     .build();
            return productInventoryRepository.save(newProductInventory);
         });
+        var inventoryTransaction = InventoryTransaction.builder()
+                .createdAt(LocalDateTime.now())
+                .inventory(inventory)
+                .product(product)
+                .reason(TransactionReason.CREATED)
+                .type(TransactionType.IN)
+                .quantityChange(dto.getStockQuantity())
+                .build();
+        inventoryTransactionService.createInventoryTransaction(InventoryTransactionMapper.toDTO(inventoryTransaction));
 
        ProductDTO productDTO = ProductMapper.toDTO(product,category.getId(),inventory.getId());
         productDTO.setStockQuantity(productInventory.getQuantity());
@@ -101,10 +119,23 @@ public class ProductService {
         return "Product Category Successfully Updated !";
     }
     @Transactional
-    public String changeProductStockQuantity(Long productId,Long inventoryId,Integer quantity){
+    public String changeProductStockQuantity(Long userId,Long productId,Long inventoryId,Integer quantity,TransactionType transactionType,TransactionReason reason){
         var productInventory = productInventoryRepository.findByProductIdAndInventoryId(productId,inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found in this Inventory !"));
+        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var inventory = inventoryRepository.findById(inventoryId).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
+        var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
         productInventory.setQuantity(quantity);
         productInventoryRepository.save(productInventory);
+        var inventoryTransaction = InventoryTransaction.builder()
+                .user(user)
+                .product(product)
+                .inventory(inventory)
+                .quantityChange(quantity)
+                .reason(reason)
+                .type(transactionType)
+                .createdAt(LocalDateTime.now())
+                .build();
+        inventoryTransactionService.createInventoryTransaction(InventoryTransactionMapper.toDTO(inventoryTransaction));
         return "Product Stock Quantity has been Changed !";
     }
     public Page<ProductDTO> getAllProducts(Pageable pageable){
@@ -125,16 +156,6 @@ public class ProductService {
     }
     public Page<ProductDTO> getProductsByCategoryId(Long categoryId,Pageable pageable){
         return productRepository.findByCategoryId(categoryId,pageable).map(product -> ProductMapper.toDTO(product,categoryId,null));
-    }
-    //move this method to inventory service
-    public Page<InventoryDTO> getInventoriesByProductId(Long productId,Pageable pageable){
-        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
-        var productInventories = productInventoryRepository.findByProductId(productId,pageable);
-        return productInventories.map(inventory ->
-                InventoryMapper.toDTO(
-                        inventoryRepository.findById(
-                                inventory.getId()).orElseThrow(
-                                        ()->new IllegalArgumentException("Inventory Not Found !"))));
     }
     public Page<ProductDTO> getAllProductsByInventoryId(Long inventoryId,Pageable pageable){
         var inventory = inventoryRepository.findById(inventoryId).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
@@ -204,5 +225,46 @@ public class ProductService {
     @CachePut(value = "products",key = "#productId")
     public ProductDTO markProductAsNotDeleted(Long productId){
         return ProductMapper.toDTO(changeProductStatus(productId,null,null,false));
+    }
+    @Transactional
+    @CachePut(value = "productInventories",key = "#productId")
+    public ProductInventoryDTO changeProductInventory(Long userId, Long productId, Long oldInventoryId, Long newInventoryId, TransactionReason reason){
+        if(oldInventoryId.equals(newInventoryId)){
+            throw new IllegalArgumentException("Product Is Already in the same Inventory !");
+        }
+        var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
+        var oldProductInventory = productInventoryRepository.findByProductIdAndInventoryId(productId,oldInventoryId).orElseThrow(()->new IllegalArgumentException("Product Is Not Stocked In This Inventory !"));
+        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var oldInventory = inventoryRepository.findById(oldInventoryId).orElseThrow(()->new IllegalArgumentException("Old Inventory Not Found !"));
+        var newInventory = inventoryRepository.findById(newInventoryId).orElseThrow(()->new IllegalArgumentException("New Inventory Not Found !"));
+        var newProductInventory = ProductInventory.builder()
+                .product(product)
+                .inventory(newInventory)
+                .isAvailable(oldProductInventory.getIsAvailable())
+                .quantity(oldProductInventory.getQuantity())
+                .createdAt(LocalDateTime.now())
+                .build();
+        productInventoryRepository.save(newProductInventory);
+        var oldInventoryTransaction = InventoryTransaction.builder()
+                .user(user)
+                .createdAt(LocalDateTime.now())
+                .product(product)
+                .inventory(oldInventory)
+                .type(TransactionType.OUT)
+                .quantityChange(newProductInventory.getQuantity())
+                .reason(reason)
+                .build();
+        var newInventoryTransaction = InventoryTransaction.builder()
+                .user(user)
+                .createdAt(LocalDateTime.now())
+                .product(product)
+                .inventory(newInventory)
+                .type(TransactionType.IN)
+                .quantityChange(newProductInventory.getQuantity())
+                .reason(reason)
+                .build();
+        inventoryTransactionService.createInventoryTransaction(InventoryTransactionMapper.toDTO(oldInventoryTransaction));
+        inventoryTransactionService.createInventoryTransaction(InventoryTransactionMapper.toDTO(newInventoryTransaction));
+        return ProductInventoryMapper.toDTO(newProductInventory);
     }
 }

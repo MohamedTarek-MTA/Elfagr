@@ -80,7 +80,7 @@ public class InventoryTransactionService {
         return inventoryTransactionRepository.findAll(pageable).map(InventoryTransactionMapper::toDTO);
     }
     @Transactional
-    public String createInventoryTransaction(InventoryTransactionDTO dto){
+    public void  createInventoryTransaction(InventoryTransactionDTO dto){
         var inventory = inventoryRepository.findById(dto.getInventoryId()).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
         var product = productRepository.findById(dto.getProductId()).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         InventoryTransaction.builder()
@@ -91,6 +91,5 @@ public class InventoryTransactionService {
                 .quantityChange(dto.getQuantityChange())
                 .createdAt(LocalDateTime.now())
                 .build();
-        return "New Transaction Created At Inventory "+inventory.getName();
     }
 }

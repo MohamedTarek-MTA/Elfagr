@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.Cascade;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -77,11 +78,12 @@ public class AuthService {
 
 
 
+    @CachePut(value = "usersByEmail", key = "#dto.email")
     public String verifyEmail(MailDTO dto){
 
         log.info(String.valueOf(dto.getVerificationCode()));
         log.info(String.valueOf(dto.getEmail()));
-        var user = userService.getUserByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Incorrect Email !!"));
+        var user = userRepository.findByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Incorrect Email !!"));
         if(!user.getVerificationCode().equals(dto.getVerificationCode())){
             log.warn(user.getVerificationCode());
             log.warn(user.getEmail());
@@ -97,8 +99,7 @@ public class AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword())
         );
-        var user = userService.getUserByEmail(request.getEmail()).orElseThrow(()->new IllegalArgumentException("Invalid email or password !"));
-        if(user.getIsDeleted()){
+        var user = userService.getUserByEmail(request.getEmail());        if(user.getIsDeleted()){
             throw new IllegalArgumentException("This Account Has Been Deleted !");
         }
         if(!user.getStatus().equals(Status.ACTIVE)){
@@ -108,9 +109,10 @@ public class AuthService {
         userService.updateLastLoginDate(user.getId());
         return new AuthResponse(token);
     }
+    @CachePut(value = "changePassMSG",key = "#request.email")
 
     public String resetPassword(ResetPasswordRequest request){
-        var user = userService.getUserByEmail(request.getEmail()).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
+        var user = userService.getUserByEmail(request.getEmail());
         if(user.getIsDeleted()){
             throw new IllegalArgumentException("This Account Has Been Deleted !");
         }
@@ -128,10 +130,9 @@ public class AuthService {
         return "Password Changed Successfully !";
     }
 
-
+    @CachePut(value = "resendCodes",key = "#dto.email")
     public String resendVerificationCode(ResendCodeDTO dto){
-        var user = userService.getUserByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("Email Not Found !"));
-        try{
+        var user = userService.getUserByEmail(dto.getEmail());        try{
             String code = generateCode();
             user.setVerificationCode(code);
             userRepository.save(user);

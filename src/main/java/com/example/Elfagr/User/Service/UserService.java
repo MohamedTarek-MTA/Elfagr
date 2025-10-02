@@ -30,22 +30,25 @@ public class UserService {
     private final UserRepository userRepository;
     private final UploadImageService uploadImageService;
 
-    @Cacheable(value = "usersByEmail",key = "#email")
-    public Optional<User> getUserByEmail(String email){
-        return  userRepository.findByEmail(email);
-    }
-    @Cacheable(value = "usersByPhone",key = "#phone")
-    public Optional<User> getUserByPhone(String phone){
-        return userRepository.findByPhone(phone);
+    @Cacheable(value = "usersByEmail", key = "#email")
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Found!"));
     }
 
-    public boolean isEmailExists(String email){
-        return getUserByEmail(email).isPresent();
-    }
-    public boolean isPhoneExists(String phone){
-        return getUserByPhone(phone).isPresent();
+    @Cacheable(value = "usersByPhone", key = "#phone")
+    public User getUserByPhone(String phone) {
+        return userRepository.findByPhone(phone)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Found!"));
     }
 
+    public boolean isEmailExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    public boolean isPhoneExists(String phone) {
+        return userRepository.findByPhone(phone).isPresent();
+    }
     @Async
     public void updateLastLoginDate(Long id){
          userRepository.findById(id).ifPresent(user -> {
