@@ -45,9 +45,10 @@ public class ProductService {
     private final InventoryTransactionService inventoryTransactionService;
     private final UserRepository userRepository;
     @Transactional
-    public ProductDTO createProduct(ProductDTO dto, MultipartFile image){
+    public ProductDTO createProduct(Long userId,ProductDTO dto, MultipartFile image){
         if(dto.getCategoryId() == null || dto.getInventoryId() == null)
             throw new IllegalArgumentException("Please Choose Product Category and Inventory !");
+        var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
         var category = categoryRepository.findById(dto.getCategoryId()).orElseThrow(()->new IllegalArgumentException("Category Not Found !"));
         var inventory = inventoryRepository.findById(dto.getInventoryId()).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
         if(!inventory.getStatus().equals(Status.ACTIVE)){
@@ -81,6 +82,7 @@ public class ProductService {
            return productInventoryRepository.save(newProductInventory);
         });
         var inventoryTransaction = InventoryTransaction.builder()
+                .user(user)
                 .createdAt(LocalDateTime.now())
                 .inventory(inventory)
                 .product(product)
@@ -88,7 +90,7 @@ public class ProductService {
                 .type(TransactionType.IN)
                 .quantityChange(dto.getStockQuantity())
                 .build();
-        inventoryTransactionService.createInventoryTransaction(InventoryTransactionMapper.toDTO(inventoryTransaction));
+        inventoryTransactionService.createInventoryTransaction(userId,InventoryTransactionMapper.toDTO(inventoryTransaction));
 
        ProductDTO productDTO = ProductMapper.toDTO(product,category.getId(),inventory.getId());
         productDTO.setStockQuantity(productInventory.getQuantity());
@@ -124,7 +126,14 @@ public class ProductService {
         var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         var inventory = inventoryRepository.findById(inventoryId).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
         var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
-        productInventory.setQuantity(quantity);
+        if(transactionType.equals(TransactionType.IN)){
+            productInventory.setQuantity(productInventory.getQuantity()+quantity);
+        }
+        if (transactionType.equals(TransactionType.OUT)) {
+           if(productInventory.getQuantity()-quantity < 0)
+               throw new IllegalArgumentException("Stock Quantity Could Not be a negative value !");
+           productInventory.setQuantity(productInventory.getQuantity()-quantity);
+        }
         productInventoryRepository.save(productInventory);
         var inventoryTransaction = InventoryTransaction.builder()
                 .user(user)
@@ -135,7 +144,7 @@ public class ProductService {
                 .type(transactionType)
                 .createdAt(LocalDateTime.now())
                 .build();
-        inventoryTransactionService.createInventoryTransaction(InventoryTransactionMapper.toDTO(inventoryTransaction));
+        inventoryTransactionService.createInventoryTransaction(userId,InventoryTransactionMapper.toDTO(inventoryTransaction));
         return "Product Stock Quantity has been Changed !";
     }
     public Page<ProductDTO> getAllProducts(Pageable pageable){
@@ -251,7 +260,7 @@ public class ProductService {
                 .product(product)
                 .inventory(oldInventory)
                 .type(TransactionType.OUT)
-                .quantityChange(newProductInventory.getQuantity())
+                .quantityChange(oldProductInventory.getQuantity())
                 .reason(reason)
                 .build();
         var newInventoryTransaction = InventoryTransaction.builder()
@@ -263,8 +272,13 @@ public class ProductService {
                 .quantityChange(newProductInventory.getQuantity())
                 .reason(reason)
                 .build();
-        inventoryTransactionService.createInventoryTransaction(InventoryTransactionMapper.toDTO(oldInventoryTransaction));
-        inventoryTransactionService.createInventoryTransaction(InventoryTransactionMapper.toDTO(newInventoryTransaction));
+        inventoryTransactionService.createInventoryTransaction(userId,InventoryTransactionMapper.toDTO(oldInventoryTransaction));
+        inventoryTransactionService.createInventoryTransaction(userId,InventoryTransactionMapper.toDTO(newInventoryTransaction));
+        oldProductInventory.setIsAvailable(false);
+        oldProductInventory.setIsDeleted(true);
+        oldProductInventory.setQuantity(0);
+        oldProductInventory.setDeletedAt(LocalDateTime.now());
+        productInventoryRepository.save(oldProductInventory);
         return ProductInventoryMapper.toDTO(newProductInventory);
     }
 }

@@ -8,6 +8,7 @@ import com.example.Elfagr.Inventory.Mapper.InventoryTransactionMapper;
 import com.example.Elfagr.Inventory.Repository.InventoryRepository;
 import com.example.Elfagr.Inventory.Repository.InventoryTransactionRepository;
 import com.example.Elfagr.Product.Repository.ProductRepository;
+import com.example.Elfagr.User.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class InventoryTransactionService {
     private final InventoryTransactionRepository inventoryTransactionRepository;
     private final InventoryRepository inventoryRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     @Cacheable(value = "inventoryTransactions",key = "#id")
     public InventoryTransactionDTO getTransactionById(Long id){
@@ -80,7 +82,8 @@ public class InventoryTransactionService {
         return inventoryTransactionRepository.findAll(pageable).map(InventoryTransactionMapper::toDTO);
     }
     @Transactional
-    public void  createInventoryTransaction(InventoryTransactionDTO dto){
+    public void  createInventoryTransaction(Long userId,InventoryTransactionDTO dto){
+        var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
         var inventory = inventoryRepository.findById(dto.getInventoryId()).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
         var product = productRepository.findById(dto.getProductId()).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         InventoryTransaction.builder()
@@ -90,6 +93,7 @@ public class InventoryTransactionService {
                 .type(dto.getType())
                 .quantityChange(dto.getQuantityChange())
                 .createdAt(LocalDateTime.now())
+                .user(user)
                 .build();
     }
 }

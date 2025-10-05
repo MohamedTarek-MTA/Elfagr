@@ -21,6 +21,7 @@ public class InventoryTransactionDTO implements Serializable {
     private Long inventoryId;
     @NotBlank
     private Long productId;
+    private Long userId;
     @NotBlank
     private TransactionType type;
     @NotBlank
