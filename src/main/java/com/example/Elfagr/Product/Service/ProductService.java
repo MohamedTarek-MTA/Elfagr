@@ -12,6 +12,7 @@ import com.example.Elfagr.Product.DTO.ProductDTO;
 import com.example.Elfagr.Product.DTO.ProductInventoryDTO;
 import com.example.Elfagr.Product.Entity.Product;
 import com.example.Elfagr.Product.Entity.ProductInventory;
+import com.example.Elfagr.Product.Enum.CategoryStatus;
 import com.example.Elfagr.Product.Enum.ProductStatus;
 import com.example.Elfagr.Product.Mapper.ProductInventoryMapper;
 import com.example.Elfagr.Product.Mapper.ProductMapper;
@@ -51,6 +52,9 @@ public class ProductService {
         var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
         var category = categoryRepository.findById(dto.getCategoryId()).orElseThrow(()->new IllegalArgumentException("Category Not Found !"));
         var inventory = inventoryRepository.findById(dto.getInventoryId()).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
+        if(category.getStatus().equals(CategoryStatus.NOT_AVAILABLE)){
+            throw new IllegalArgumentException("Sorry This Category Is Currently Unavailable !");
+        }
         if(!inventory.getStatus().equals(Status.ACTIVE)){
             throw new IllegalArgumentException("Sorry This Inventory Is Not Working Please Try Again Later !");
         }

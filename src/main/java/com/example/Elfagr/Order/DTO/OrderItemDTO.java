@@ -17,6 +17,8 @@ import java.time.LocalDateTime;
 public class OrderItemDTO implements Serializable {
     private Long id;
     private Long productId;
+    private Long orderId;
+    private Long inventoryId;
     @NotBlank
     @Min(value = 1)
     private Integer quantity;

@@ -1,6 +1,7 @@
 package com.example.Elfagr.Return.DTO;
 
 import com.example.Elfagr.Return.Entity.ReturnItem;
+import com.example.Elfagr.Return.Enum.ReturnReason;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
@@ -23,7 +24,9 @@ public class ReturnDTO implements Serializable {
     @NotBlank
     private Long userId;
     @NotBlank
-    private String reason;
+    private ReturnReason reason;
+
+    private String notes;
 
     @NotBlank
     private BigDecimal totalAmount;

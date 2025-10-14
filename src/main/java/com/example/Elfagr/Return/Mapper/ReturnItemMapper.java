@@ -1,5 +1,6 @@
 package com.example.Elfagr.Return.Mapper;
 
+import com.example.Elfagr.Order.Entity.OrderItem;
 import com.example.Elfagr.Return.DTO.ReturnItemDTO;
 import com.example.Elfagr.Return.Entity.ReturnItem;
 import com.example.Elfagr.Return.Entity.Return;
@@ -31,6 +32,15 @@ public class ReturnItemMapper {
                 .productId(returnItem.getProduct() != null ? returnItem.getProduct().getId() : null)
                 .quantity(returnItem.getQuantity())
                 .subTotal(returnItem.getSubTotal())
+                .build();
+    }
+    public static ReturnItem toReturnItem(OrderItem orderItem,Return aReturn){
+        return ReturnItem.builder()
+                .aReturn(aReturn)
+                .product(orderItem.getProduct())
+                .inventory(orderItem.getInventory())
+                .subTotal(orderItem.getSubTotal())
+                .quantity(orderItem.getQuantity())
                 .build();
     }
 

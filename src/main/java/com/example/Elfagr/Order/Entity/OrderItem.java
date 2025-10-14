@@ -24,7 +24,7 @@ public class OrderItem {
     @NotBlank
     private Integer quantity;
 
-    @NotBlank
+
     private BigDecimal subTotal;
 
     @NotBlank
@@ -38,11 +38,11 @@ public class OrderItem {
     @JoinColumn(name = "order_id",nullable = false)
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id",nullable = false)
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_id",nullable = false)
     private Inventory inventory;
 }

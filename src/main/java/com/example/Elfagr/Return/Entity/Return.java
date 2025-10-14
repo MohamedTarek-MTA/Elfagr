@@ -1,6 +1,7 @@
 package com.example.Elfagr.Return.Entity;
 
 import com.example.Elfagr.Order.Entity.Order;
+import com.example.Elfagr.Return.Enum.ReturnReason;
 import com.example.Elfagr.User.Entity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -27,7 +28,8 @@ public class Return {
     private Long id;
 
     @NotBlank
-    private String reason;
+    @Enumerated(EnumType.STRING)
+    private ReturnReason reason;
 
     @NotBlank
     private BigDecimal totalAmount;
@@ -41,6 +43,7 @@ public class Return {
     private String customerPhone;
 
     private String customerInfo;
+    private String notes;
 
     private LocalDateTime createdAt;
 

@@ -36,6 +36,7 @@ public class InventoryTransactionMapper {
                 .updatedAt(inventoryTransaction.getUpdatedAt())
                 .deletedAt(inventoryTransaction.getDeletedAt())
                 .isDeleted(inventoryTransaction.getIsDeleted())
+                .userId(inventoryTransaction.getUser().getId())
                 .build();
     }
 
