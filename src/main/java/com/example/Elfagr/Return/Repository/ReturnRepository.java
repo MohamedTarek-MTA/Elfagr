@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface ReturnRepository extends JpaRepository<Return,Long> {
     Optional<Return> findByOrder_Id(Long orderId);
+    Optional<Return> findByUser_Id(Long userId);
     boolean existsByOrder_Id(Long orderId);
 }
