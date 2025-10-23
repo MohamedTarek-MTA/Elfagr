@@ -12,6 +12,7 @@ import com.example.Elfagr.Order.DTO.OrderItemDTO;
 import com.example.Elfagr.Order.Entity.Order;
 import com.example.Elfagr.Order.Entity.OrderItem;
 import com.example.Elfagr.Order.Enum.OrderStatus;
+import com.example.Elfagr.Order.Enum.PaymentMethod;
 import com.example.Elfagr.Order.Mapper.OrderItemMapper;
 import com.example.Elfagr.Order.Mapper.OrderMapper;
 import com.example.Elfagr.Order.Repository.OrderItemRepository;
@@ -139,7 +140,7 @@ public class OrderService {
         return OrderMapper.toDTO(orderRepository.findById(orderId).orElseThrow(()->new IllegalArgumentException("Order Not Found !")));
     }
     public Page<OrderDTO> getOrdersByCustomerName(String customerName, Pageable pageable){
-        var orders = orderRepository.findByCustomerNameIgnoreCase(customerName,pageable);
+        var orders = orderRepository.findByCustomerNameContainingIgnoreCase(customerName,pageable);
         return orders.map(OrderMapper::toDTO);
     }
 
@@ -251,5 +252,18 @@ public class OrderService {
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
         return OrderMapper.toDTO(order);
+    }
+
+    public Page<Order> getOrdersByPaymentMethod(PaymentMethod paymentMethod,Pageable pageable){
+        return orderRepository.findByPaymentMethod(paymentMethod,pageable);
+    }
+    public Page<OrderDTO> getCashPayed(Pageable pageable){
+        return getOrdersByPaymentMethod(PaymentMethod.CASH,pageable).map(OrderMapper::toDTO);
+    }
+    public Page<OrderDTO> getCreditCardPayed(Pageable pageable){
+        return getOrdersByPaymentMethod(PaymentMethod.CREDIT_CARD,pageable).map(OrderMapper::toDTO);
+    }
+    public Page<OrderDTO> getEWalletPayed(Pageable pageable){
+        return getOrdersByPaymentMethod(PaymentMethod.E_WALLET,pageable).map(OrderMapper::toDTO);
     }
 }

@@ -196,11 +196,11 @@ public class ProductService {
         return productDTO;
     }
     public Page<ProductDTO> getProductByName(String name,Pageable pageable){
-        var products = productRepository.findByNameIgnoreCase(name,pageable);
+        var products = productRepository.findByNameContainingIgnoreCase(name,pageable);
         return products.map(ProductMapper::toDTO);
     }
     public Page<ProductDTO> getProductsByCategoryName(String name , Pageable pageable){
-        var products = productRepository.findByCategoryNameIgnoreCase(name,pageable);
+        var products = productRepository.findByCategoryNameContainingIgnoreCase(name,pageable);
         return products.map(ProductMapper::toDTO);
     }
     @Transactional

@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
 
 public interface OrderRepository extends JpaRepository<Order,Long> {
-    Page<Order> findByCustomerNameIgnoreCase(String customerName, Pageable pageable);
+    Page<Order> findByCustomerNameContainingIgnoreCase(String customerName, Pageable pageable);
 
     Page<Order> findByCustomerPhone(String customerPhone,Pageable pageable);
 

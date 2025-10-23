@@ -13,17 +13,24 @@ import com.example.Elfagr.Product.Repository.ProductRepository;
 import com.example.Elfagr.Return.DTO.ReturnDTO;
 import com.example.Elfagr.Return.Entity.Return;
 import com.example.Elfagr.Return.Entity.ReturnItem;
+import com.example.Elfagr.Return.Enum.ReturnReason;
 import com.example.Elfagr.Return.Mapper.ReturnMapper;
 import com.example.Elfagr.Return.Repository.ReturnItemRepository;
 import com.example.Elfagr.Return.Repository.ReturnRepository;
 import com.example.Elfagr.User.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +39,7 @@ public class ReturnService {
     private final ReturnItemRepository returnItemRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final InventoryRepository inventoryRepository;
     private final InventoryTransactionService inventoryTransactionService;
-    private final ProductRepository productRepository;
     private final ProductInventoryRepository productInventoryRepository;
     @Transactional
     public ReturnDTO createReturn(Long employeeId,Long orderId,ReturnDTO dto){
@@ -94,5 +99,41 @@ public class ReturnService {
         returnRepository.save(aReturn);
         returnItemRepository.saveAll(aReturn.getReturnItems());
         return ReturnMapper.toDTO(aReturn);
+    }
+    @Cacheable(value = "returnsById",key = "#returnId")
+    public ReturnDTO getReturnById(Long returnId){
+        return ReturnMapper.toDTO(returnRepository.findById(returnId).orElseThrow(()->new IllegalArgumentException("Return Not Found !")));
+    }
+    public Page<ReturnDTO> getByOrderId(Long orderId, Pageable pageable){
+        return returnRepository.findByOrder_Id(orderId,pageable).map(ReturnMapper::toDTO);
+    }
+    public Page<ReturnDTO> getByEmployeeId(Long employeeId,Pageable pageable){
+        return returnRepository.findByUser_Id(employeeId,pageable).map(ReturnMapper::toDTO);
+    }
+    public Page<ReturnDTO> getByCustomerName(String customerName,Pageable pageable){
+        return returnRepository.findByCustomerNameContainingIgnoreCase(customerName,pageable).map(ReturnMapper::toDTO);
+    }
+    public Page<ReturnDTO> getByCustomerPhone(String phone,Pageable pageable){
+        return returnRepository.findByCustomerPhone(phone,pageable).map(ReturnMapper::toDTO);
+    }
+    public Page<ReturnDTO> getByCreationDate(LocalDate creationDate,Pageable pageable){
+        var startOfDay = creationDate.atStartOfDay();
+        var endOfDay = creationDate.atTime(LocalTime.MAX);
+        return returnRepository.findByCreatedAtBetween(startOfDay,endOfDay,pageable).map(ReturnMapper::toDTO);
+    }
+    public Page<ReturnDTO> getReturnByReason(ReturnReason reason,Pageable pageable){
+        return returnRepository.findByReason(reason,pageable).map(ReturnMapper::toDTO);
+    }
+    public Page<ReturnDTO> getDamagedReturns(Pageable pageable){
+        return getReturnByReason(ReturnReason.DAMAGED,pageable);
+    }
+    public Page<ReturnDTO> getWrongItemReturns(Pageable pageable){
+        return getReturnByReason(ReturnReason.WRONG_ITEM,pageable);
+    }
+    public Page<ReturnDTO> getCustomerRequestReturns(Pageable pageable){
+        return getReturnByReason(ReturnReason.CUSTOMER_REQUEST,pageable);
+    }
+    public Page<ReturnDTO> getExpiredReturns(Pageable pageable){
+        return getReturnByReason(ReturnReason.EXPIRED,pageable);
     }
 }
