@@ -61,7 +61,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryDTO updateCategoryStatus(Long id, CategoryStatus status, Boolean isDeleted) {
+    private CategoryDTO updateCategoryStatus(Long id, CategoryStatus status, Boolean isDeleted) {
         var category = categoryRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Category Not Found !"));
 
         category.setStatus(status);
@@ -77,12 +77,12 @@ public class CategoryService {
     }
 
     @CachePut(value = "categories",key = "#id")
-    public CategoryDTO availableCategory(Long id){
+    public CategoryDTO setAsAvailableCategory(Long id){
         return updateCategoryStatus(id,CategoryStatus.AVAILABLE,false);
     }
 
     @CachePut(value = "categories",key = "#id")
-    public CategoryDTO notAvailableCategory(Long id){
+    public CategoryDTO setAsNotAvailableCategory(Long id){
         return updateCategoryStatus(id,CategoryStatus.NOT_AVAILABLE,false);
     }
 
@@ -96,14 +96,20 @@ public class CategoryService {
 
     }
 
-   public Page<CategoryDTO> getByStatus(CategoryStatus status,Pageable pageable){
+   private Page<CategoryDTO> getByStatus(CategoryStatus status,Pageable pageable){
         return (categoryRepository.findByStatus(status,pageable)).map(CategoryMapper::toDTO);
    }
 
    @Cacheable(value = "categories",key = "#name")
-   public CategoryDTO getByName(String name){
-        return CategoryMapper.toDTO(categoryRepository.findByNameContainingIgnoreCase(name)
-                .orElseThrow(()->new IllegalArgumentException("Category Not Found !")));
+   public Page<CategoryDTO> getByName(String name,Pageable pageable){
+        return categoryRepository.findByNameContainingIgnoreCase(name,pageable).map(CategoryMapper::toDTO);
    }
+
+   public Page<CategoryDTO> getAvailableCategories(Pageable pageable){
+        return getByStatus(CategoryStatus.AVAILABLE,pageable);
+   }
+    public Page<CategoryDTO> getNotAvailableCategories(Pageable pageable){
+        return getByStatus(CategoryStatus.NOT_AVAILABLE,pageable);
+    }
 
 }

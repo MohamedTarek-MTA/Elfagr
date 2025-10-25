@@ -23,6 +23,7 @@ import com.example.Elfagr.Shared.Service.UploadImageService;
 import com.example.Elfagr.User.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -204,7 +205,7 @@ public class ProductService {
         return products.map(ProductMapper::toDTO);
     }
     @Transactional
-    public Product changeProductStatus(Long productId, ProductStatus status , Boolean isAvailable,Boolean isDeleted){
+    private Product changeProductStatus(Long productId, ProductStatus status , Boolean isAvailable, Boolean isDeleted){
         var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         Optional.ofNullable(isDeleted).ifPresent(product::setIsDeleted);
         Optional.ofNullable(status).ifPresent(product::setStatus);

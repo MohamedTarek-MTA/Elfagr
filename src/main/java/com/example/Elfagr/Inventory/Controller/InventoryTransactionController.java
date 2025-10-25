@@ -28,7 +28,7 @@ public class InventoryTransactionController {
     public ResponseEntity<Page<InventoryTransactionDTO>> getTransactionsByInventoryId(@PathVariable Long id,
                                                                                       @RequestParam(defaultValue = "0")@Min(0) int page,
                                                                                       @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                                      @RequestParam(defaultValue = "name") String sortBy,
+                                                                                      @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                                       @RequestParam(defaultValue = "asc") String direction
                                                                                       ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -40,7 +40,7 @@ public class InventoryTransactionController {
     public ResponseEntity<Page<InventoryTransactionDTO>> getTransactionsByProductId(@PathVariable Long id,
                                                                                       @RequestParam(defaultValue = "0")@Min(0) int page,
                                                                                       @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                                      @RequestParam(defaultValue = "name") String sortBy,
+                                                                                      @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                                       @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -51,7 +51,7 @@ public class InventoryTransactionController {
     public ResponseEntity<Page<InventoryTransactionDTO>> getTransactionsByEmployeeId(@PathVariable Long id,
                                                                                       @RequestParam(defaultValue = "0")@Min(0) int page,
                                                                                       @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                                      @RequestParam(defaultValue = "name") String sortBy,
+                                                                                      @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                                       @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -62,7 +62,7 @@ public class InventoryTransactionController {
     @GetMapping("/in")
     public ResponseEntity<Page<InventoryTransactionDTO>> getInTransactions(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                            @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                           @RequestParam(defaultValue = "name") String sortBy,
+                                                                           @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                            @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -72,7 +72,7 @@ public class InventoryTransactionController {
     @GetMapping("/out")
     public ResponseEntity<Page<InventoryTransactionDTO>> getOutTransactions(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                            @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                           @RequestParam(defaultValue = "name") String sortBy,
+                                                                           @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                            @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -83,7 +83,7 @@ public class InventoryTransactionController {
     @GetMapping("/sold")
     public ResponseEntity<Page<InventoryTransactionDTO>> getSoldTransactions(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                            @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                           @RequestParam(defaultValue = "name") String sortBy,
+                                                                           @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                            @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -93,7 +93,7 @@ public class InventoryTransactionController {
     @GetMapping("/damaged")
     public ResponseEntity<Page<InventoryTransactionDTO>> getDamagedTransactions(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                              @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                             @RequestParam(defaultValue = "name") String sortBy,
+                                                                             @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                              @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -104,7 +104,7 @@ public class InventoryTransactionController {
     @GetMapping("/returned")
     public ResponseEntity<Page<InventoryTransactionDTO>> getReturnedTransactions(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                                 @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                                @RequestParam(defaultValue = "name") String sortBy,
+                                                                                @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                                 @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -114,7 +114,7 @@ public class InventoryTransactionController {
     @GetMapping("/restocked")
     public ResponseEntity<Page<InventoryTransactionDTO>> getRestockedTransactions(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                                  @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                                 @RequestParam(defaultValue = "name") String sortBy,
+                                                                                 @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                                  @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
@@ -124,7 +124,7 @@ public class InventoryTransactionController {
     @GetMapping("/")
     public ResponseEntity<Page<InventoryTransactionDTO>> getAllTransactions(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                                   @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                                  @RequestParam(defaultValue = "name") String sortBy,
+                                                                                  @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                                   @RequestParam(defaultValue = "asc") String direction
     ){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);

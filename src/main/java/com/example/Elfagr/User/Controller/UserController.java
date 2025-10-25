@@ -34,7 +34,7 @@ public class UserController {
         return isAccessible;
     }
 
-    @PatchMapping("/user/delete-account/{id}")
+    @DeleteMapping("/user/{id}")
     public ResponseEntity<?> deleteAccount(@PathVariable Long id,@AuthenticationPrincipal User userDetails){
         var isAccessible = userService.checkAccess(id, userDetails);
 
@@ -89,7 +89,7 @@ public class UserController {
     public ResponseEntity<UserDTO> userToAdmin(@PathVariable Long id){
         return ResponseEntity.ok(userService.toAdmin(id));
     }
-    @GetMapping("/search/name")
+    @GetMapping("/user/name")
     public ResponseEntity<Page<UserDTO>> searchByName(@RequestParam String name,
                                                       @RequestParam(defaultValue = "0") @Min(0) int page,
                                                       @RequestParam(defaultValue = "10") @Min(1) int size,
