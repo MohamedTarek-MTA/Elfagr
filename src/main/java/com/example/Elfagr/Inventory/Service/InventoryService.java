@@ -37,8 +37,8 @@ public class InventoryService {
     public Page<InventoryDTO> getAllInventories(Pageable pageable){
         return inventoryRepository.findAll(pageable).map(InventoryMapper::toDTO);
     }
-
-    public InventoryDTO updateInventoryStatus(Long id , Status status, Boolean isDeleted){
+    @Transactional
+    private InventoryDTO updateInventoryStatus(Long id , Status status, Boolean isDeleted){
         var inventory = inventoryRepository.findById(id).orElseThrow(()->new IllegalArgumentException("Inventory Not Found"));
 
         inventory.setStatus(status);

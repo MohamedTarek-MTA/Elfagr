@@ -49,12 +49,12 @@ public class InventoryTransactionService {
         var transactions = inventoryTransactionRepository.findByUser_Id(employeeId,pageable);
         return transactions.map(InventoryTransactionMapper::toDTO);
     }
-    public Page<InventoryTransactionDTO> getTransactionsByReason(TransactionReason reason,Pageable pageable){
+    private Page<InventoryTransactionDTO> getTransactionsByReason(TransactionReason reason,Pageable pageable){
         var transactions = inventoryTransactionRepository.findByReason(reason,pageable);
         return transactions.map(InventoryTransactionMapper::toDTO);
     }
 
-    public Page<InventoryTransactionDTO> getTransactionsByType(TransactionType type,Pageable pageable){
+    private Page<InventoryTransactionDTO> getTransactionsByType(TransactionType type,Pageable pageable){
         var transactions = inventoryTransactionRepository.findByType(type,pageable);
         return transactions.map(InventoryTransactionMapper::toDTO);
     }
@@ -66,7 +66,7 @@ public class InventoryTransactionService {
         return getTransactionsByType(TransactionType.OUT,pageable);
     }
 
-    public Page<InventoryTransactionDTO> getSoledTransactions(Pageable pageable){
+    public Page<InventoryTransactionDTO> getSoldTransactions(Pageable pageable){
         return getTransactionsByReason(TransactionReason.SOLD,pageable);
     }
     public Page<InventoryTransactionDTO> getDamagedTransactions(Pageable pageable){

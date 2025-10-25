@@ -1,5 +1,6 @@
 package com.example.Elfagr.User.Controller;
 
+import com.example.Elfagr.Shared.Service.PageableService;
 import com.example.Elfagr.User.DTO.UserDTO;
 import com.example.Elfagr.User.Entity.User;
 import com.example.Elfagr.User.Mapper.UserMapper;
@@ -79,9 +80,7 @@ public class UserController {
                                                      @RequestParam(defaultValue = "name") String sortBy ,
                                                      @RequestParam(defaultValue = "asc") String direction)
     {
-        Sort sort = direction.equalsIgnoreCase("desc")
-                ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page,size,sort);
+       Pageable pageable = PageableService.pageHandler(page, size, sortBy, direction);
 
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
@@ -97,9 +96,8 @@ public class UserController {
                                                       @RequestParam(defaultValue = "name") String sortBy,
                                                       @RequestParam(defaultValue = "asc") String direction)
     {
-        Sort sort = direction.equalsIgnoreCase("desc")
-                ?Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page,size,sort);
+        Pageable pageable = PageableService.pageHandler(page, size, sortBy, direction);
+
         return ResponseEntity.ok(userService.searchByName(name,pageable));
     }
 

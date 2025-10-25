@@ -20,6 +20,8 @@ public class OpenApiConfig {
                         .title("Elfagr API")
                         .version("1.0.0")
                         .description("Backend APIs for Elfagr platform"))
+                // ✅ This tells Swagger to use the bearerAuth scheme for all endpoints
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName,
                                 new SecurityScheme()
