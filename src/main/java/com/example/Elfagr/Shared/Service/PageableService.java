@@ -10,7 +10,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PageableService {
     public static Pageable pageHandler(int page,int size , String sortBy , String direction){
-        Sort sort = sortBy.equalsIgnoreCase("desc")? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         return PageRequest.of(page,size,sort);
     }
 }

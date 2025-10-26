@@ -17,7 +17,9 @@ import java.util.List;
         @Index(name = "idx_product_name",columnList = "name"),
         @Index(name = "idx_product_sku" , columnList = "sku"),
         @Index(name = "idx_product_barcode",columnList = "barcode")
-})
+},
+        uniqueConstraints = @UniqueConstraint(columnNames = {"barcode", "sku", "status"})
+)
 @Getter
 @Setter
 @AllArgsConstructor

@@ -103,7 +103,7 @@ public class ProductService {
     }
     @Transactional
     @CachePut(key = "#productId",value = "products")
-    public String updateProduct(Long productId,ProductDTO dto,MultipartFile image){
+    public ProductDTO updateProduct(Long productId,ProductDTO dto,MultipartFile image){
         var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         Optional.ofNullable(dto.getName()).ifPresent(product::setName);
         Optional.ofNullable(dto.getPrice()).ifPresent(product::setPrice);
@@ -114,44 +114,18 @@ public class ProductService {
             product.setImageUrl(imageUrl);
         }
         product.setUpdatedAt(LocalDateTime.now());
-        return "Product Successfully Updated !";
+        return ProductMapper.toDTO(product);
     }
     @Transactional
     @CachePut(value = "products",key = "#productId")
-    public String changeProductCategory(Long categoryId,Long productId){
-        var category = categoryRepository.findById(categoryId).orElseThrow(()->new IllegalArgumentException("Category Not Found !"));
+    public ProductDTO changeProductCategory(Long newCategoryId,Long productId){
+        var newCategory = categoryRepository.findById(newCategoryId).orElseThrow(()->new IllegalArgumentException("Category Not Found !"));
         var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
-        product.setCategory(category);
+        product.setCategory(newCategory);
         product.setUpdatedAt(LocalDateTime.now());
-        return "Product Category Successfully Updated !";
+        return ProductMapper.toDTO(product);
     }
-    @Transactional
-    public String changeProductStockQuantity(Long userId,Long productId,Long inventoryId,Integer quantity,TransactionType transactionType,TransactionReason reason){
-        var productInventory = productInventoryRepository.findByProductIdAndInventoryId(productId,inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found in this Inventory !"));
-        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
-        var inventory = inventoryRepository.findById(inventoryId).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
-        var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
-        if(transactionType.equals(TransactionType.IN)){
-            productInventory.setQuantity(productInventory.getQuantity()+quantity);
-        }
-        if (transactionType.equals(TransactionType.OUT)) {
-           if(productInventory.getQuantity()-quantity < 0)
-               throw new IllegalArgumentException("Stock Quantity Could Not be a negative value !");
-           productInventory.setQuantity(productInventory.getQuantity()-quantity);
-        }
-        productInventoryRepository.save(productInventory);
-        var inventoryTransaction = InventoryTransaction.builder()
-                .user(user)
-                .product(product)
-                .inventory(inventory)
-                .quantityChange(quantity)
-                .reason(reason)
-                .type(transactionType)
-                .createdAt(LocalDateTime.now())
-                .build();
-        inventoryTransactionService.createInventoryTransaction(userId,InventoryTransactionMapper.toDTO(inventoryTransaction));
-        return "Product Stock Quantity has been Changed !";
-    }
+
     public Page<ProductDTO> getAllProducts(Pageable pageable){
         var products = productRepository.findAll(pageable);
         return products.map(ProductMapper::toDTO);
@@ -171,7 +145,7 @@ public class ProductService {
     public Page<ProductDTO> getProductsByCategoryId(Long categoryId,Pageable pageable){
         return productRepository.findByCategoryId(categoryId,pageable).map(product -> ProductMapper.toDTO(product,categoryId,null));
     }
-    public Page<ProductDTO> getAllProductsByInventoryId(Long inventoryId,Pageable pageable){
+    public Page<ProductDTO> getProductsByInventoryId(Long inventoryId,Pageable pageable){
         var inventory = inventoryRepository.findById(inventoryId).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
         var productInventories = productInventoryRepository.findByInventoryId(inventoryId,pageable);
         return productInventories.map(product ->
@@ -181,16 +155,32 @@ public class ProductService {
                                 new IllegalArgumentException("Product Not Found !"))));
     }
     @Cacheable(value = "products",key = "T(String).valueOf(#sku).concat('-').concat(T(String).valueOf(#inventoryId))")
-    public ProductDTO getProductBySkuAndInventoryId(String sku,Long inventoryId){
-        var product = productRepository.findBySkuOrBarcode(sku,null).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+    public ProductDTO getNewProductBySkuAndInventoryId(String sku,Long inventoryId){
+        var product = productRepository.findBySkuAndStatus(sku,ProductStatus.NEW).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
+        var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
+        productDTO.setStockQuantity(productInventory.getQuantity());
+        return productDTO;
+    }
+    @Cacheable(value = "products",key = "T(String).valueOf(#sku).concat('-').concat(T(String).valueOf(#inventoryId))")
+    public ProductDTO getImportedProductBySkuAndInventoryId(String sku,Long inventoryId){
+        var product = productRepository.findBySkuAndStatus(sku,ProductStatus.IMPORTED).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
         var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
         productDTO.setStockQuantity(productInventory.getQuantity());
         return productDTO;
     }
     @Cacheable(value = "products",key = "T(String).valueOf(#barcode).concat('-').concat(T(String).valueOf(#inventoryId))")
-    public ProductDTO getProductByBarcodeAndInventoryId(String barcode,Long inventoryId){
-        var product = productRepository.findBySkuOrBarcode(null,barcode).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+    public ProductDTO getNewProductByBarcodeAndInventoryId(String barcode,Long inventoryId){
+        var product = productRepository.findByBarcodeAndStatus(barcode,ProductStatus.NEW).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
+        var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
+        productDTO.setStockQuantity(productInventory.getQuantity());
+        return productDTO;
+    }
+    @Cacheable(value = "products",key = "T(String).valueOf(#barcode).concat('-').concat(T(String).valueOf(#inventoryId))")
+    public ProductDTO getImportedProductByBarcodeAndInventoryId(String barcode,Long inventoryId){
+        var product = productRepository.findByBarcodeAndStatus(barcode,ProductStatus.IMPORTED).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
         var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
         productDTO.setStockQuantity(productInventory.getQuantity());
@@ -218,11 +208,11 @@ public class ProductService {
     }
     @CachePut(value = "products",key = "#productId")
     public ProductDTO markProductAsAvailable(Long productId){
-        return ProductMapper.toDTO(changeProductStatus(productId,null,true,null));
+        return ProductMapper.toDTO(changeProductStatus(productId,null,true,false));
     }
     @CachePut(value = "products",key = "#productId")
     public ProductDTO markProductAsInAvailable(Long productId){
-        return ProductMapper.toDTO(changeProductStatus(productId,null,false,null));
+        return ProductMapper.toDTO(changeProductStatus(productId,null,false,false));
     }
     @CachePut(value = "products",key = "#productId")
     public ProductDTO markProductAsNew(Long productId){
@@ -234,56 +224,7 @@ public class ProductService {
     }
     @CachePut(value = "products",key = "#productId")
     public ProductDTO markProductAsDeleted(Long productId){
-        return ProductMapper.toDTO(changeProductStatus(productId,null,null,true));
+        return ProductMapper.toDTO(changeProductStatus(productId,null,false,true));
     }
-    @CachePut(value = "products",key = "#productId")
-    public ProductDTO markProductAsNotDeleted(Long productId){
-        return ProductMapper.toDTO(changeProductStatus(productId,null,null,false));
-    }
-    @Transactional
-    @CachePut(value = "productInventories",key = "#productId")
-    public ProductInventoryDTO changeProductInventory(Long userId, Long productId, Long oldInventoryId, Long newInventoryId, TransactionReason reason){
-        if(oldInventoryId.equals(newInventoryId)){
-            throw new IllegalArgumentException("Product Is Already in the same Inventory !");
-        }
-        var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
-        var oldProductInventory = productInventoryRepository.findByProductIdAndInventoryId(productId,oldInventoryId).orElseThrow(()->new IllegalArgumentException("Product Is Not Stocked In This Inventory !"));
-        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
-        var oldInventory = inventoryRepository.findById(oldInventoryId).orElseThrow(()->new IllegalArgumentException("Old Inventory Not Found !"));
-        var newInventory = inventoryRepository.findById(newInventoryId).orElseThrow(()->new IllegalArgumentException("New Inventory Not Found !"));
-        var newProductInventory = ProductInventory.builder()
-                .product(product)
-                .inventory(newInventory)
-                .isAvailable(oldProductInventory.getIsAvailable())
-                .quantity(oldProductInventory.getQuantity())
-                .createdAt(LocalDateTime.now())
-                .build();
-        productInventoryRepository.save(newProductInventory);
-        var oldInventoryTransaction = InventoryTransaction.builder()
-                .user(user)
-                .createdAt(LocalDateTime.now())
-                .product(product)
-                .inventory(oldInventory)
-                .type(TransactionType.OUT)
-                .quantityChange(oldProductInventory.getQuantity())
-                .reason(reason)
-                .build();
-        var newInventoryTransaction = InventoryTransaction.builder()
-                .user(user)
-                .createdAt(LocalDateTime.now())
-                .product(product)
-                .inventory(newInventory)
-                .type(TransactionType.IN)
-                .quantityChange(newProductInventory.getQuantity())
-                .reason(reason)
-                .build();
-        inventoryTransactionService.createInventoryTransaction(userId,InventoryTransactionMapper.toDTO(oldInventoryTransaction));
-        inventoryTransactionService.createInventoryTransaction(userId,InventoryTransactionMapper.toDTO(newInventoryTransaction));
-        oldProductInventory.setIsAvailable(false);
-        oldProductInventory.setIsDeleted(true);
-        oldProductInventory.setQuantity(0);
-        oldProductInventory.setDeletedAt(LocalDateTime.now());
-        productInventoryRepository.save(oldProductInventory);
-        return ProductInventoryMapper.toDTO(newProductInventory);
-    }
+
 }
