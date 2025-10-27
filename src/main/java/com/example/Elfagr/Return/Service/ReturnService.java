@@ -121,7 +121,7 @@ public class ReturnService {
         var endOfDay = creationDate.atTime(LocalTime.MAX);
         return returnRepository.findByCreatedAtBetween(startOfDay,endOfDay,pageable).map(ReturnMapper::toDTO);
     }
-    public Page<ReturnDTO> getReturnByReason(ReturnReason reason,Pageable pageable){
+    private Page<ReturnDTO> getReturnByReason(ReturnReason reason,Pageable pageable){
         return returnRepository.findByReason(reason,pageable).map(ReturnMapper::toDTO);
     }
     public Page<ReturnDTO> getDamagedReturns(Pageable pageable){
@@ -135,5 +135,8 @@ public class ReturnService {
     }
     public Page<ReturnDTO> getExpiredReturns(Pageable pageable){
         return getReturnByReason(ReturnReason.EXPIRED,pageable);
+    }
+    public Page<ReturnDTO> getAllReturns(Pageable pageable){
+        return returnRepository.findAll(pageable).map(ReturnMapper::toDTO);
     }
 }

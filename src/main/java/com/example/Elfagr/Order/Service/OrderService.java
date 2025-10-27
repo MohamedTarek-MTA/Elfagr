@@ -53,8 +53,8 @@ public class OrderService {
     private final ReturnItemRepository returnItemRepository;
 
     @Transactional
-    public OrderDTO createOrder(OrderDTO orderDTO) {
-        var user = userRepository.findById(orderDTO.getUserId())
+    public OrderDTO createOrder(Long employeeId,OrderDTO orderDTO) {
+        var user = userRepository.findById(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Sorry, this employee not found!"));
 
         Order order = Order.builder()
@@ -160,7 +160,7 @@ public class OrderService {
         var orders = orderRepository.findByUser_Id(employeeId,pageable);
         return orders.map(OrderMapper::toDTO);
     }
-    public Page<OrderDTO> getOrdersByStatus(OrderStatus status,Pageable pageable){
+    private Page<OrderDTO> getOrdersByStatus(OrderStatus status,Pageable pageable){
         var orders = orderRepository.findByOrderStatus(status,pageable);
         return orders.map(OrderMapper::toDTO);
     }
@@ -180,14 +180,14 @@ public class OrderService {
         return getOrdersByStatus(OrderStatus.DELIVERED,pageable);
     }
 
-    public OrderDTO changeOrderStatusById(Long orderId,OrderStatus status){
+    private OrderDTO changeOrderStatusById(Long orderId,OrderStatus status){
         var order = orderRepository.findById(orderId).orElseThrow(()->new IllegalArgumentException("Order Not Found !"));
         order.setOrderStatus(status);
         orderRepository.save(order);
         return OrderMapper.toDTO(order);
     }
     @CachePut(value = "ordersById",key = "#orderId")
-    public OrderDTO setOrderAsDelivered(Long orderId){
+    public OrderDTO setOrderAsDelivering(Long orderId){
         return changeOrderStatusById(orderId,OrderStatus.DELIVERED);
     }
     @CachePut(value = "ordersById",key = "#orderId")
@@ -195,7 +195,7 @@ public class OrderService {
         return changeOrderStatusById(orderId,OrderStatus.PROCESSING);
     }
     @CachePut(value = "ordersById",key = "#orderId")
-    public OrderDTO setOrderAsShipped(Long orderId){
+    public OrderDTO setOrderAsShipping(Long orderId){
         return changeOrderStatusById(orderId,OrderStatus.SHIPPED);
     }
     @CachePut(value = "ordersById",key = "#orderId")
@@ -265,5 +265,8 @@ public class OrderService {
     }
     public Page<OrderDTO> getEWalletPayed(Pageable pageable){
         return getOrdersByPaymentMethod(PaymentMethod.E_WALLET,pageable).map(OrderMapper::toDTO);
+    }
+    public Page<OrderDTO> getAllOrders(Pageable pageable){
+        return orderRepository.findAll(pageable).map(OrderMapper::toDTO);
     }
 }
