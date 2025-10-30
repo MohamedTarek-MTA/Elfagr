@@ -7,6 +7,7 @@ import com.example.Elfagr.Security.DTO.*;
 import com.example.Elfagr.Security.Util.JwtUtil;
 import com.example.Elfagr.User.Entity.User;
 import com.example.Elfagr.User.Enum.Status;
+import com.example.Elfagr.User.Mapper.UserMapper;
 import com.example.Elfagr.User.Repository.UserRepository;
 import com.example.Elfagr.User.Service.UserService;
 import jakarta.transaction.Transactional;
@@ -78,7 +79,7 @@ public class AuthService {
 
 
 
-    @CachePut(value = "usersByEmail", key = "#dto.email")
+    @CachePut(value = "verifyUsersByEmail", key = "#dto.email")
     public String verifyEmail(MailDTO dto){
 
         log.info(String.valueOf(dto.getVerificationCode()));
@@ -99,7 +100,8 @@ public class AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword())
         );
-        var user = userService.getUserByEmail(request.getEmail());        if(user.getIsDeleted()){
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
+        if(user.getIsDeleted()){
             throw new IllegalArgumentException("This Account Has Been Deleted !");
         }
         if(!user.getStatus().equals(Status.ACTIVE)){
@@ -112,7 +114,7 @@ public class AuthService {
     @CachePut(value = "changePassMSG",key = "#request.email")
 
     public String resetPassword(ResetPasswordRequest request){
-        var user = userService.getUserByEmail(request.getEmail());
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
         if(user.getIsDeleted()){
             throw new IllegalArgumentException("This Account Has Been Deleted !");
         }
@@ -132,7 +134,7 @@ public class AuthService {
 
     @CachePut(value = "resendCodes",key = "#dto.email")
     public String resendVerificationCode(ResendCodeDTO dto){
-        var user = userService.getUserByEmail(dto.getEmail());        try{
+        var user = userRepository.findByEmail(dto.getEmail()).orElseThrow(()->new IllegalArgumentException("User Not Found !"));        try{
             String code = generateCode();
             user.setVerificationCode(code);
             userRepository.save(user);

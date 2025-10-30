@@ -3,7 +3,9 @@ package com.example.Elfagr.Product.DTO;
 import com.example.Elfagr.Product.Enum.ProductStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
@@ -34,9 +36,10 @@ public class ProductDTO implements Serializable {
 
     private String description;
 
-    @NotBlank
+    @NotNull
+    @DecimalMin(value = "0.0")
     private BigDecimal price;
-    @NotBlank
+    @NotNull
     private ProductStatus productStatus;
 
     private String imageUrl;

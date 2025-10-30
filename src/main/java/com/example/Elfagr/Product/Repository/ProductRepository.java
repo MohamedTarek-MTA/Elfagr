@@ -10,11 +10,11 @@ import org.springframework.security.core.parameters.P;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product,Long> {
-    Optional<Product> findBySkuOrBarcode(String sku,String barcode);
+    Optional<Product> findBySkuAndBarcodeAndProductStatus(String sku,String barcode,ProductStatus status);
 
-    Optional<Product> findBySkuAndStatus(String sku, ProductStatus status);
+    Optional<Product> findBySkuAndProductStatus(String sku, ProductStatus status);
 
-    Optional<Product> findByBarcodeAndStatus(String barcode,ProductStatus status);
+    Optional<Product> findByBarcodeAndProductStatus(String barcode,ProductStatus status);
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
     Page<Product> findByCategoryNameContainingIgnoreCase(String categoryName,Pageable pageable);
     Page<Product> findByNameContainingIgnoreCase(String name,Pageable pageable);

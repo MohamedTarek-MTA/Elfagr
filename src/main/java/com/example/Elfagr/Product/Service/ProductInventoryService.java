@@ -15,9 +15,12 @@ import com.example.Elfagr.User.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -101,4 +104,44 @@ public class ProductInventoryService {
         inventoryTransactionService.createInventoryTransaction(userId,InventoryTransactionMapper.toDTO(inventoryTransaction));
         return ProductInventoryMapper.toDTO(productInventory);
     }
+    public Page<ProductInventoryDTO> getProductsByInventoryId(Long inventoryId, Pageable pageable){
+        var inventory = inventoryRepository.findById(inventoryId).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
+        var productInventories = productInventoryRepository.findByInventoryId(inventoryId,pageable);
+        return productInventories.map(productInventory -> ProductInventoryMapper.toDTO(
+                productInventoryRepository.findByProductIdAndInventoryId(productInventory.getProduct().getId(), productInventory.getInventory().getId()).orElseThrow(()->new IllegalArgumentException("Not Found !"))
+        ));
+    }
+    public Page<ProductInventoryDTO> getAllProductInventories(Pageable pageable){
+        return productInventoryRepository.findAll(pageable).map(ProductInventoryMapper::toDTO);
+    }
+    @Transactional
+    private ProductInventoryDTO updateProductInventoryStatus(Boolean isAvailable , Boolean isDeleted ,Long productInventoryId){
+        var productInventory = productInventoryRepository.findById(productInventoryId).orElseThrow(()->new IllegalArgumentException("Sorry Not Found !"));
+        Optional.ofNullable(isAvailable).ifPresent(productInventory::setIsAvailable);
+        Optional.ofNullable(isDeleted).ifPresent(productInventory::setIsDeleted);
+        if(Boolean.TRUE.equals(isDeleted)){
+            productInventory.setDeletedAt(LocalDateTime.now());
+        }
+        productInventory.setUpdatedAt(LocalDateTime.now());
+        return ProductInventoryMapper.toDTO(productInventoryRepository.save(productInventory));
+    }
+    @CachePut(value = "productsInventoriesStatus",key = "#productInventoryId")
+    public ProductInventoryDTO markAsAvailable(Long productInventoryId){
+        return updateProductInventoryStatus(true,false,productInventoryId);
+    }
+    @CachePut(value = "productsInventoriesStatus",key = "#productInventoryId")
+    public ProductInventoryDTO markAsUnAvailable(Long productInventoryId){
+        return updateProductInventoryStatus(false,false,productInventoryId);
+    }
+    @CachePut(value = "productsInventoriesStatus",key = "#productInventoryId")
+    public ProductInventoryDTO markAsDeleted(Long productInventoryId){
+        return updateProductInventoryStatus(false,true,productInventoryId);
+    }
+    public Page<ProductInventoryDTO> findAvailableProductInventory(Pageable pageable){
+        return productInventoryRepository.findByIsAvailableTrue(pageable).map(ProductInventoryMapper::toDTO);
+    }
+    public Page<ProductInventoryDTO> findUnAvailableProductInventory(Pageable pageable){
+        return productInventoryRepository.findByIsAvailableFalse(pageable).map(ProductInventoryMapper::toDTO);
+    }
+
 }

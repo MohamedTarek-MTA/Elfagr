@@ -2,6 +2,7 @@ package com.example.Elfagr.Return.Controller;
 
 import com.example.Elfagr.Return.DTO.ReturnDTO;
 import com.example.Elfagr.Return.Service.ReturnService;
+import com.example.Elfagr.Security.Service.CustomUserDetails;
 import com.example.Elfagr.Shared.Service.PageableService;
 import com.example.Elfagr.User.Entity.User;
 import jakarta.validation.constraints.Min;
@@ -128,7 +129,7 @@ public class ReturnController {
     }
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @PostMapping("/return/order/{id}")
-    public ResponseEntity<ReturnDTO> createReturn(@AuthenticationPrincipal User userDetails,
+    public ResponseEntity<ReturnDTO> createReturn(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                   @PathVariable Long id,
                                                   @RequestBody ReturnDTO dto){
         return ResponseEntity.ok(returnService.createReturn(userDetails.getId(), id,dto));

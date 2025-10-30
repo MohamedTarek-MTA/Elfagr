@@ -26,7 +26,7 @@ public class CategoryController {
     @GetMapping("/available")
     public ResponseEntity<Page<CategoryDTO>> getAvailableCategories(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                     @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                    @RequestParam(defaultValue = "name") String sortBy,
+                                                                    @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                     @RequestParam(defaultValue = "asc") String direction){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
         return ResponseEntity.ok(categoryService.getAvailableCategories(pageable));
@@ -35,7 +35,7 @@ public class CategoryController {
     @GetMapping("/not-available")
     public ResponseEntity<Page<CategoryDTO>> getNotAvailableCategories(@RequestParam(defaultValue = "0")@Min(0) int page,
                                                                     @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                    @RequestParam(defaultValue = "name") String sortBy,
+                                                                    @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                     @RequestParam(defaultValue = "asc") String direction){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
         return ResponseEntity.ok(categoryService.getNotAvailableCategories(pageable));
@@ -45,7 +45,7 @@ public class CategoryController {
     public ResponseEntity<Page<CategoryDTO>> getCategoryByName(@RequestParam String name,
                                                                @RequestParam(defaultValue = "0")@Min(0) int page,
                                                                @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                               @RequestParam(defaultValue = "name") String sortBy,
+                                                               @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                @RequestParam(defaultValue = "asc") String direction) {
         Pageable pageable = PageableService.pageHandler(page, size, sortBy, direction);
         return ResponseEntity.ok(categoryService.getByName(name,pageable));
@@ -55,7 +55,7 @@ public class CategoryController {
     public ResponseEntity<Page<CategoryDTO>> getAllCategories(
                                                                @RequestParam(defaultValue = "0")@Min(0) int page,
                                                                @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                               @RequestParam(defaultValue = "name") String sortBy,
+                                                               @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                @RequestParam(defaultValue = "asc") String direction) {
         Pageable pageable = PageableService.pageHandler(page, size, sortBy, direction);
         return ResponseEntity.ok(categoryService.getAllCategories(pageable));

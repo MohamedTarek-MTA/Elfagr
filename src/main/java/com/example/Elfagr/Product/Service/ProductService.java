@@ -59,7 +59,7 @@ public class ProductService {
         if(!inventory.getStatus().equals(Status.ACTIVE)){
             throw new IllegalArgumentException("Sorry This Inventory Is Not Working Please Try Again Later !");
         }
-        var product = productRepository.findBySkuOrBarcode(dto.getSku(),dto.getBarcode()).orElseGet(()->{
+        var product = productRepository.findBySkuAndBarcodeAndProductStatus(dto.getSku(),dto.getBarcode(),dto.getProductStatus()).orElseGet(()->{
           Product newProduct =  Product.builder()
                     .category(category)
                     .name(dto.getName())
@@ -69,6 +69,7 @@ public class ProductService {
                     .description(dto.getDescription())
                     .createdAt(LocalDateTime.now())
                     .isAvailable(dto.getIsAvailable())
+                    .productStatus(dto.getProductStatus())
                     .build();
             if(image != null && !image.isEmpty()){
                 String imageUrl = uploadImageService.uploadMultipartFile(image);
@@ -76,6 +77,8 @@ public class ProductService {
             }
           return productRepository.save(newProduct);
         });
+        product.setPrice(dto.getPrice());
+        productRepository.save(product);
         var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventory.getId()).orElseGet(()->{
             ProductInventory newProductInventory = ProductInventory.builder()
                     .product(product)
@@ -145,18 +148,10 @@ public class ProductService {
     public Page<ProductDTO> getProductsByCategoryId(Long categoryId,Pageable pageable){
         return productRepository.findByCategoryId(categoryId,pageable).map(product -> ProductMapper.toDTO(product,categoryId,null));
     }
-    public Page<ProductDTO> getProductsByInventoryId(Long inventoryId,Pageable pageable){
-        var inventory = inventoryRepository.findById(inventoryId).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
-        var productInventories = productInventoryRepository.findByInventoryId(inventoryId,pageable);
-        return productInventories.map(product ->
-                ProductMapper.toDTO(
-                        productRepository.findById(
-                            product.getId()).orElseThrow(()->
-                                new IllegalArgumentException("Product Not Found !"))));
-    }
+
     @Cacheable(value = "products",key = "T(String).valueOf(#sku).concat('-').concat(T(String).valueOf(#inventoryId))")
     public ProductDTO getNewProductBySkuAndInventoryId(String sku,Long inventoryId){
-        var product = productRepository.findBySkuAndStatus(sku,ProductStatus.NEW).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var product = productRepository.findBySkuAndProductStatus(sku,ProductStatus.NEW).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
         var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
         productDTO.setStockQuantity(productInventory.getQuantity());
@@ -164,7 +159,7 @@ public class ProductService {
     }
     @Cacheable(value = "products",key = "T(String).valueOf(#sku).concat('-').concat(T(String).valueOf(#inventoryId))")
     public ProductDTO getImportedProductBySkuAndInventoryId(String sku,Long inventoryId){
-        var product = productRepository.findBySkuAndStatus(sku,ProductStatus.IMPORTED).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var product = productRepository.findBySkuAndProductStatus(sku,ProductStatus.IMPORTED).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
         var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
         productDTO.setStockQuantity(productInventory.getQuantity());
@@ -172,7 +167,7 @@ public class ProductService {
     }
     @Cacheable(value = "products",key = "T(String).valueOf(#barcode).concat('-').concat(T(String).valueOf(#inventoryId))")
     public ProductDTO getNewProductByBarcodeAndInventoryId(String barcode,Long inventoryId){
-        var product = productRepository.findByBarcodeAndStatus(barcode,ProductStatus.NEW).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var product = productRepository.findByBarcodeAndProductStatus(barcode,ProductStatus.NEW).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
         var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
         productDTO.setStockQuantity(productInventory.getQuantity());
@@ -180,7 +175,7 @@ public class ProductService {
     }
     @Cacheable(value = "products",key = "T(String).valueOf(#barcode).concat('-').concat(T(String).valueOf(#inventoryId))")
     public ProductDTO getImportedProductByBarcodeAndInventoryId(String barcode,Long inventoryId){
-        var product = productRepository.findByBarcodeAndStatus(barcode,ProductStatus.IMPORTED).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var product = productRepository.findByBarcodeAndProductStatus(barcode,ProductStatus.IMPORTED).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventoryId).orElseThrow(()->new IllegalArgumentException("Product Not Found In this Inventory !"));
         var productDTO = ProductMapper.toDTO(product,product.getCategory().getId(),inventoryId);
         productDTO.setStockQuantity(productInventory.getQuantity());
@@ -198,7 +193,7 @@ public class ProductService {
     private Product changeProductStatus(Long productId, ProductStatus status , Boolean isAvailable, Boolean isDeleted){
         var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
         Optional.ofNullable(isDeleted).ifPresent(product::setIsDeleted);
-        Optional.ofNullable(status).ifPresent(product::setStatus);
+        Optional.ofNullable(status).ifPresent(product::setProductStatus);
         Optional.ofNullable(isAvailable).ifPresent(product::setIsAvailable);
         product.setUpdatedAt(LocalDateTime.now());
         if(Boolean.TRUE.equals(isDeleted)){
@@ -211,7 +206,7 @@ public class ProductService {
         return ProductMapper.toDTO(changeProductStatus(productId,null,true,false));
     }
     @CachePut(value = "products",key = "#productId")
-    public ProductDTO markProductAsInAvailable(Long productId){
+    public ProductDTO markProductAsUnAvailable(Long productId){
         return ProductMapper.toDTO(changeProductStatus(productId,null,false,false));
     }
     @CachePut(value = "products",key = "#productId")

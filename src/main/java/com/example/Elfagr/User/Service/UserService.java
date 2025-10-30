@@ -31,15 +31,15 @@ public class UserService {
     private final UploadImageService uploadImageService;
 
     @Cacheable(value = "usersByEmail", key = "#email")
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User Not Found!"));
+    public UserDTO getUserByEmail(String email) {
+        return UserMapper.toDTO(userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Found!")));
     }
 
     @Cacheable(value = "usersByPhone", key = "#phone")
-    public User getUserByPhone(String phone) {
-        return userRepository.findByPhone(phone)
-                .orElseThrow(() -> new IllegalArgumentException("User Not Found!"));
+    public UserDTO getUserByPhone(String phone) {
+        return UserMapper.toDTO(userRepository.findByPhone(phone)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Found!")));
     }
 
     public boolean isEmailExists(String email) {
@@ -106,7 +106,7 @@ public class UserService {
             String url = uploadImageService.uploadMultipartFile(image);
             user.setImageUrl(url);
         }
-
+        userRepository.save(user);
         return UserMapper.toDTO(user);
     }
     @Cacheable(value = "usersById",key = "#id")

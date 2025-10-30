@@ -1,5 +1,6 @@
 package com.example.Elfagr.User.Controller;
 
+import com.example.Elfagr.Security.Service.CustomUserDetails;
 import com.example.Elfagr.Shared.Service.PageableService;
 import com.example.Elfagr.User.DTO.UserDTO;
 import com.example.Elfagr.User.Entity.User;
@@ -25,8 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
     private final UserService userService;
     @PutMapping("user/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestPart(value = "user",required = false) UserDTO dto, @RequestPart(value = "image",required = false) MultipartFile image, @AuthenticationPrincipal User userDetails){
-        var isAccessible = userService.checkAccess(id, userDetails);
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestPart(value = "user",required = false) UserDTO dto, @RequestPart(value = "image",required = false) MultipartFile image, @AuthenticationPrincipal CustomUserDetails userDetails){
+        var isAccessible = userService.checkAccess(id, userDetails.getUser());
 
         if(isAccessible == null)
             return ResponseEntity.ok(userService.updateUser(id,dto,image));
@@ -35,8 +36,8 @@ public class UserController {
     }
 
     @DeleteMapping("/user/{id}")
-    public ResponseEntity<?> deleteAccount(@PathVariable Long id,@AuthenticationPrincipal User userDetails){
-        var isAccessible = userService.checkAccess(id, userDetails);
+    public ResponseEntity<?> deleteAccount(@PathVariable Long id,@AuthenticationPrincipal CustomUserDetails userDetails){
+        var isAccessible = userService.checkAccess(id, userDetails.getUser());
 
         if(isAccessible == null)
             return ResponseEntity.ok(userService.deleteUser(id));
@@ -63,17 +64,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getById(id));
     }
     @GetMapping("/user/email")
-    public ResponseEntity<?> getUserByEmail(@RequestParam String email){
-        var user = userService.getUserByEmail(email);
-
-            return ResponseEntity.ok(UserMapper.toDTO(user));
+    public ResponseEntity<UserDTO> getUserByEmail(@RequestParam String email){
+        return ResponseEntity.ok(userService.getUserByEmail(email));
 
     }
     @GetMapping("/user/phone")
-    public ResponseEntity<?> getUserByPhone(@RequestParam String phone){
-        var user = userService.getUserByPhone(phone);
-
-        return ResponseEntity.ok(UserMapper.toDTO(user)); }
+    public ResponseEntity<?> getUserByPhone(@RequestParam String phone) {
+        return ResponseEntity.ok(userService.getUserByPhone(phone));
+    }
     @GetMapping
     public ResponseEntity<Page<UserDTO>> getAllUsers(@RequestParam(defaultValue = "0") @Min(0) int page ,
                                                      @RequestParam(defaultValue = "10") @Min(1) int size ,

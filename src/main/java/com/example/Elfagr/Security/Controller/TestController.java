@@ -1,5 +1,7 @@
 package com.example.Elfagr.Security.Controller;
 
+import com.example.Elfagr.Security.Service.CustomUserDetails;
+import com.example.Elfagr.Security.Service.CustomUserDetailsService;
 import com.example.Elfagr.User.Entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin")
-    public ResponseEntity<?> adminAPI(@AuthenticationPrincipal User userDetails){
+    public ResponseEntity<?> adminAPI(@AuthenticationPrincipal CustomUserDetails principal){
+        var userDetails = principal.getUser();
         return ResponseEntity.ok(userDetails.getId()+" "+userDetails.getEmail()+"Hello Admin !");
     }
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/user")
-    public ResponseEntity<?> memberAPI(@AuthenticationPrincipal User userDetails){
+    public ResponseEntity<?> memberAPI(@AuthenticationPrincipal CustomUserDetails principal){
+        var userDetails = principal.getUser();
         return ResponseEntity.ok(userDetails.getId()+" "+userDetails.getEmail()+"Hello Member !");
     }
 }

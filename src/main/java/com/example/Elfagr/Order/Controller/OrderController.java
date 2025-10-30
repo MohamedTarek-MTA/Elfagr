@@ -2,6 +2,7 @@ package com.example.Elfagr.Order.Controller;
 
 import com.example.Elfagr.Order.DTO.OrderDTO;
 import com.example.Elfagr.Order.Service.OrderService;
+import com.example.Elfagr.Security.Service.CustomUserDetails;
 import com.example.Elfagr.Shared.Service.PageableService;
 import com.example.Elfagr.User.Entity.User;
 import jakarta.validation.constraints.Min;
@@ -180,12 +181,12 @@ public class OrderController {
     }
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @PatchMapping("/canceled/order/{id}")
-    public ResponseEntity<OrderDTO> setOrderAsCanceled(@AuthenticationPrincipal User userDetails, @PathVariable Long id){
+    public ResponseEntity<OrderDTO> setOrderAsCanceled(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id){
         return ResponseEntity.ok(orderService.setOrderAsCanceled(userDetails.getId(),id));
     }
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @PostMapping("/order")
-    public ResponseEntity<OrderDTO> createOrder(@AuthenticationPrincipal User userDetails,@RequestBody OrderDTO dto){
+    public ResponseEntity<OrderDTO> createOrder(@AuthenticationPrincipal CustomUserDetails userDetails,@RequestBody OrderDTO dto){
         return ResponseEntity.ok(orderService.createOrder(userDetails.getId(),dto));
     }
 

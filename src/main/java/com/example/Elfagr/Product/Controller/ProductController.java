@@ -2,6 +2,7 @@ package com.example.Elfagr.Product.Controller;
 
 import com.example.Elfagr.Product.DTO.ProductDTO;
 import com.example.Elfagr.Product.Service.ProductService;
+import com.example.Elfagr.Security.Service.CustomUserDetails;
 import com.example.Elfagr.Shared.Service.PageableService;
 import com.example.Elfagr.User.Entity.User;
 import jakarta.validation.constraints.Min;
@@ -31,21 +32,12 @@ public class ProductController {
     public ResponseEntity<Page<ProductDTO>> getProductsByCategoryId(@PathVariable Long id,
                                                                     @RequestParam(defaultValue = "0")@Min(0) int page,
                                                                     @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                    @RequestParam(defaultValue = "name") String sortBy,
+                                                                    @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                     @RequestParam(defaultValue = "asc")String direction){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
         return ResponseEntity.ok(productService.getProductsByCategoryId(id,pageable));
     }
-    @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
-    @GetMapping("/inventory/{id}")
-    public ResponseEntity<Page<ProductDTO>> getProductsByInventoryId(@PathVariable Long id,
-                                                                    @RequestParam(defaultValue = "0")@Min(0) int page,
-                                                                    @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                    @RequestParam(defaultValue = "name") String sortBy,
-                                                                    @RequestParam(defaultValue = "asc")String direction){
-        Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
-        return ResponseEntity.ok(productService.getProductsByInventoryId(id,pageable));
-    }
+
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @GetMapping("/inventory/{id}/new-product/sku")
     public ResponseEntity<ProductDTO> getNewProductBySkuAndInventoryId(@PathVariable Long id,@RequestParam String sku){
@@ -71,7 +63,7 @@ public class ProductController {
     public ResponseEntity<Page<ProductDTO>> getProductByName(@RequestParam String name,
                                                                      @RequestParam(defaultValue = "0")@Min(0) int page,
                                                                      @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                     @RequestParam(defaultValue = "name") String sortBy,
+                                                                     @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                      @RequestParam(defaultValue = "asc")String direction){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
         return ResponseEntity.ok(productService.getProductByName(name,pageable));
@@ -81,7 +73,7 @@ public class ProductController {
     public ResponseEntity<Page<ProductDTO>> getProductsByCategoryName(@RequestParam String name,
                                                              @RequestParam(defaultValue = "0")@Min(0) int page,
                                                              @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                             @RequestParam(defaultValue = "name") String sortBy,
+                                                             @RequestParam(defaultValue = "createdAt") String sortBy,
                                                              @RequestParam(defaultValue = "asc")String direction){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
         return ResponseEntity.ok(productService.getProductsByCategoryName(name,pageable));
@@ -91,7 +83,7 @@ public class ProductController {
     public ResponseEntity<Page<ProductDTO>> getAllProducts(
                                                                       @RequestParam(defaultValue = "0")@Min(0) int page,
                                                                       @RequestParam(defaultValue = "10")@Min(1) int size,
-                                                                      @RequestParam(defaultValue = "name") String sortBy,
+                                                                      @RequestParam(defaultValue = "createdAt") String sortBy,
                                                                       @RequestParam(defaultValue = "asc")String direction){
         Pageable pageable = PageableService.pageHandler(page,size,sortBy,direction);
         return ResponseEntity.ok(productService.getAllProducts(pageable));
@@ -107,9 +99,9 @@ public class ProductController {
         return ResponseEntity.ok(productService.markProductAsAvailable(id));
     }
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
-    @PatchMapping("/in-available/product/{id}")
-    public ResponseEntity<ProductDTO> markProductAsInAvailable(@PathVariable Long id){
-        return ResponseEntity.ok(productService.markProductAsInAvailable(id));
+    @PatchMapping("/un-available/product/{id}")
+    public ResponseEntity<ProductDTO> markProductAsUnAvailable(@PathVariable Long id){
+        return ResponseEntity.ok(productService.markProductAsUnAvailable(id));
     }
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @PatchMapping("/new/product/{id}")
@@ -136,7 +128,7 @@ public class ProductController {
     }
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @PostMapping("/product")
-    public ResponseEntity<ProductDTO> createProduct(@AuthenticationPrincipal User userDetails,
+    public ResponseEntity<ProductDTO> createProduct(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                     @RequestPart(required = false) ProductDTO dto,
                                                     @RequestPart(required = false) MultipartFile image){
         Long userId = userDetails.getId();
