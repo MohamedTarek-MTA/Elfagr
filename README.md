@@ -716,7 +716,7 @@ This project is a demo/educational project. Please check with the repository own
 
 ## 👥 Authors
 
-- **Elfagr Development Team**
+- **Mohamed Tarek**
 
 ---
 
