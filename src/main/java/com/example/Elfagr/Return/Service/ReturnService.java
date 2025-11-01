@@ -7,19 +7,24 @@ import com.example.Elfagr.Inventory.Enum.TransactionType;
 import com.example.Elfagr.Inventory.Mapper.InventoryTransactionMapper;
 import com.example.Elfagr.Inventory.Repository.InventoryRepository;
 import com.example.Elfagr.Inventory.Service.InventoryTransactionService;
+
 import com.example.Elfagr.Order.Repository.OrderRepository;
 import com.example.Elfagr.Product.Repository.ProductInventoryRepository;
 import com.example.Elfagr.Product.Repository.ProductRepository;
 import com.example.Elfagr.Return.DTO.ReturnDTO;
+import com.example.Elfagr.Return.DTO.ReturnItemDTO;
 import com.example.Elfagr.Return.Entity.Return;
 import com.example.Elfagr.Return.Entity.ReturnItem;
 import com.example.Elfagr.Return.Enum.ReturnReason;
 import com.example.Elfagr.Return.Mapper.ReturnMapper;
-import com.example.Elfagr.Return.Repository.ReturnItemRepository;
+
 import com.example.Elfagr.Return.Repository.ReturnRepository;
+import com.example.Elfagr.Security.Util.JwtUtil;
 import com.example.Elfagr.User.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,17 +35,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ReturnService {
     private final ReturnRepository returnRepository;
-    private final ReturnItemRepository returnItemRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final InventoryTransactionService inventoryTransactionService;
     private final ProductInventoryRepository productInventoryRepository;
+    private final ProductRepository productRepository;
+    private final InventoryRepository inventoryRepository;
+
     @Transactional
     public ReturnDTO createReturn(Long employeeId,Long orderId,ReturnDTO dto){
         var user = userRepository.findById(employeeId).orElseThrow(()->new IllegalArgumentException("Sorry This Employee Not Found !"));
@@ -57,14 +64,17 @@ public class ReturnService {
                 .notes(dto.getNotes())
                 .reason(dto.getReason())
                 .returnItems(new ArrayList<>())
+                .order(order)
                 .build();
         BigDecimal total = BigDecimal.ZERO;
 
-        for(var returnItemDto : dto.getReturnItems()){
-            var product = returnItemDto.getProduct();
-            var inventory = returnItemDto.getInventory();
+        List<ReturnItemDTO> items = new ArrayList<>(dto.getReturnItems());
+
+        for(var returnItemDto : items){
+            var product = productRepository.findById(returnItemDto.getProductId()).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+            var inventory = inventoryRepository.findById(returnItemDto.getInventoryId()).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
             var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventory.getId()).orElseThrow(()->new IllegalArgumentException("Sorry Product Is Not Found At This Inventory !"));
-            if(product.getIsAvailable() || !inventory.getStatus().equals(Status.ACTIVE))
+            if(!product.getIsAvailable() || !inventory.getStatus().equals(Status.ACTIVE))
                 throw new IllegalArgumentException("Sorry Product Or Inventory Is Not Available !!");
             BigDecimal subTotal = product.getPrice().multiply(BigDecimal.valueOf(returnItemDto.getQuantity()));
 
@@ -97,7 +107,7 @@ public class ReturnService {
         }
         aReturn.setTotalAmount(total);
         returnRepository.save(aReturn);
-        returnItemRepository.saveAll(aReturn.getReturnItems());
+
         return ReturnMapper.toDTO(aReturn);
     }
     @Cacheable(value = "returnsById",key = "#returnId")

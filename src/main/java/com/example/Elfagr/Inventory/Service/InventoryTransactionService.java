@@ -86,7 +86,7 @@ public class InventoryTransactionService {
         var user = userRepository.findById(userId).orElseThrow(()->new IllegalArgumentException("User Not Found !"));
         var inventory = inventoryRepository.findById(dto.getInventoryId()).orElseThrow(()->new IllegalArgumentException("Inventory Not Found !"));
         var product = productRepository.findById(dto.getProductId()).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
-        InventoryTransaction.builder()
+       var inventoryTransaction = InventoryTransaction.builder()
                 .inventory(inventory)
                 .product(product)
                 .reason(dto.getReason())
@@ -95,5 +95,6 @@ public class InventoryTransactionService {
                 .createdAt(LocalDateTime.now())
                 .user(user)
                 .build();
+        inventoryTransactionRepository.save(inventoryTransaction);
     }
 }

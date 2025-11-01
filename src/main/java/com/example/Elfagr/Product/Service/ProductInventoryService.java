@@ -143,5 +143,9 @@ public class ProductInventoryService {
     public Page<ProductInventoryDTO> findUnAvailableProductInventory(Pageable pageable){
         return productInventoryRepository.findByIsAvailableFalse(pageable).map(ProductInventoryMapper::toDTO);
     }
-
+    public Page<ProductInventoryDTO> getInventoriesByProductId(Long productId, Pageable pageable){
+        var product = productRepository.findById(productId).orElseThrow(()->new IllegalArgumentException("Product Not Found !"));
+        var productInventories = productInventoryRepository.findByProductId(productId,pageable);
+        return productInventories.map(ProductInventoryMapper::toDTO);
+    }
 }

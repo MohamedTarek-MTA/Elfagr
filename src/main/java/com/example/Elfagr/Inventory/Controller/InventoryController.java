@@ -2,6 +2,7 @@ package com.example.Elfagr.Inventory.Controller;
 
 import com.example.Elfagr.Inventory.DTO.InventoryDTO;
 import com.example.Elfagr.Inventory.Service.InventoryService;
+import com.example.Elfagr.Product.DTO.ProductInventoryDTO;
 import com.example.Elfagr.Shared.Service.PageableService;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +24,6 @@ public class InventoryController {
     @GetMapping("inventory/{id}")
     public ResponseEntity<InventoryDTO> getInventoryById(@PathVariable Long id){
         return ResponseEntity.ok(inventoryService.getInventoryById(id));
-    }
-    @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
-    @GetMapping("/product/{id}")
-    public ResponseEntity<Page<InventoryDTO>> getInventoriesByProductId(@PathVariable Long id,
-                                                                        @RequestParam(defaultValue = "0")@Min(0)int page,
-                                                                        @RequestParam(defaultValue = "10")@Min(1)int size,
-                                                                        @RequestParam(defaultValue = "name")String sortBy,
-                                                                        @RequestParam(defaultValue = "asc")String direction){
-        Pageable pageable = PageableService.pageHandler(page, size, sortBy, direction);
-
-        return ResponseEntity.ok(inventoryService.getInventoriesByProductId(id,pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")

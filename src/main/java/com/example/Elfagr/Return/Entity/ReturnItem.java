@@ -4,6 +4,7 @@ import com.example.Elfagr.Inventory.Entity.Inventory;
 import com.example.Elfagr.Product.Entity.Product;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -20,10 +21,10 @@ public class ReturnItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @NotNull
     private BigDecimal subTotal;
 
-    @NotBlank
+    @NotNull
     private Integer quantity;
 
     @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)

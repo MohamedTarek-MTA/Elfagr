@@ -90,4 +90,15 @@ public class ProductInventoryController {
     public ResponseEntity<ProductInventoryDTO> markAsAvailable(Long id){
         return ResponseEntity.ok(productInventoryService.markAsAvailable(id));
     }
+    @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
+    @GetMapping("/product/{id}")
+    public ResponseEntity<Page<ProductInventoryDTO>> getInventoriesByProductId(@PathVariable Long id,
+                                                                               @RequestParam(defaultValue = "0")@Min(0)int page,
+                                                                               @RequestParam(defaultValue = "10")@Min(1)int size,
+                                                                               @RequestParam(defaultValue = "createdAt")String sortBy,
+                                                                               @RequestParam(defaultValue = "asc")String direction){
+        Pageable pageable = PageableService.pageHandler(page, size, sortBy, direction);
+
+        return ResponseEntity.ok(productInventoryService.getInventoriesByProductId(id,pageable));
+    }
 }

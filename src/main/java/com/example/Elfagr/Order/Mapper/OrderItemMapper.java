@@ -29,6 +29,8 @@ public class OrderItemMapper {
                 .id(orderItem.getId())
                 .productId(orderItem.getProduct() != null ? orderItem.getProduct().getId() : null)
                 .quantity(orderItem.getQuantity())
+                .orderId(orderItem.getOrder().getId())
+                .inventoryId(orderItem.getInventory().getId())
                 .unitPrice(orderItem.getUnitPrice())
                 .subTotal(orderItem.getSubTotal())
                 .createdAt(orderItem.getCreatedAt())

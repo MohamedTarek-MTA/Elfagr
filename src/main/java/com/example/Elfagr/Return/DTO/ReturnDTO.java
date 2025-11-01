@@ -5,6 +5,7 @@ import com.example.Elfagr.Return.Enum.ReturnReason;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
@@ -23,12 +24,12 @@ public class ReturnDTO implements Serializable {
     private Long orderId;
     @NotBlank
     private Long userId;
-    @NotBlank
+    @NotNull
     private ReturnReason reason;
 
     private String notes;
 
-    @NotBlank
+    @NotNull
     private BigDecimal totalAmount;
 
     @NotBlank
@@ -48,5 +49,5 @@ public class ReturnDTO implements Serializable {
     private LocalDateTime deletedAt;
     @JsonProperty("deleted")
     private Boolean isDeleted;
-    private List<ReturnItem> returnItems;
+    private List<ReturnItemDTO> returnItems;
 }

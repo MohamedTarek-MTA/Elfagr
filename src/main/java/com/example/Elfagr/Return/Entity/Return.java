@@ -6,6 +6,7 @@ import com.example.Elfagr.User.Entity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -27,11 +28,11 @@ public class Return {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @NotNull
     @Enumerated(EnumType.STRING)
     private ReturnReason reason;
 
-    @NotBlank
+    @NotNull
     private BigDecimal totalAmount;
 
     @NotBlank
@@ -57,10 +58,10 @@ public class Return {
     @JoinColumn(name = "order_id",nullable = false)
     private Order order;
 
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "aReturn",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "aReturn",cascade = CascadeType.ALL,fetch = FetchType.LAZY,orphanRemoval = true)
     private List<ReturnItem> returnItems;
 }

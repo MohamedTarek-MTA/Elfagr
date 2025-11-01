@@ -3,6 +3,7 @@ package com.example.Elfagr.Order.DTO;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
@@ -19,13 +20,13 @@ public class OrderItemDTO implements Serializable {
     private Long productId;
     private Long orderId;
     private Long inventoryId;
-    @NotBlank
+    @NotNull
     @Min(value = 1)
     private Integer quantity;
 
     private BigDecimal subTotal;
 
-    @NotBlank
+    @NotNull
     @DecimalMin(value = "0.0",inclusive = false)
     private BigDecimal unitPrice;
 

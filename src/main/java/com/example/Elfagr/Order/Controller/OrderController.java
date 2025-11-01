@@ -182,7 +182,7 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @PatchMapping("/canceled/order/{id}")
     public ResponseEntity<OrderDTO> setOrderAsCanceled(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id){
-        return ResponseEntity.ok(orderService.setOrderAsCanceled(userDetails.getId(),id));
+        return ResponseEntity.ok(orderService.setOrderAsCanceled(id,userDetails.getId()));
     }
     @PreAuthorize("hasAnyRole('ADMIN','EMPLOYEE')")
     @PostMapping("/order")

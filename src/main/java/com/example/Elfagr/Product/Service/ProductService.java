@@ -23,7 +23,7 @@ import com.example.Elfagr.Shared.Service.UploadImageService;
 import com.example.Elfagr.User.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy;
+
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -38,6 +38,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+
 public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -46,6 +47,7 @@ public class ProductService {
     private final ProductInventoryRepository productInventoryRepository;
     private final InventoryTransactionService inventoryTransactionService;
     private final UserRepository userRepository;
+
     @Transactional
     public ProductDTO createProduct(Long userId,ProductDTO dto, MultipartFile image){
         if(dto.getCategoryId() == null || dto.getInventoryId() == null)
@@ -76,6 +78,7 @@ public class ProductService {
                 newProduct.setImageUrl(imageUrl);
             }
           return productRepository.save(newProduct);
+
         });
         product.setPrice(dto.getPrice());
         productRepository.save(product);

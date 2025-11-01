@@ -6,6 +6,8 @@ import com.example.Elfagr.Order.Entity.Order;
 import com.example.Elfagr.User.Entity.User;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 /**
  * Enhanced ReturnMapper with comprehensive mapping capabilities
  * Handles both Entity to DTO and DTO to Entity conversions
@@ -34,7 +36,7 @@ public class ReturnMapper {
                 .customerInfo(aReturn.getCustomerInfo())
                 .notes(aReturn.getNotes())
                 .reason(aReturn.getReason())
-                .returnItems(aReturn.getReturnItems())
+                .returnItems(aReturn.getReturnItems().stream().map(ReturnItemMapper::toDTO).collect(Collectors.toList()))
                 .createdAt(aReturn.getCreatedAt())
                 .isDeleted(aReturn.getIsDeleted())
                 .deletedAt(aReturn.getDeletedAt())

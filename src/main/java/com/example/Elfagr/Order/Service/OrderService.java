@@ -38,6 +38,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +55,8 @@ public class OrderService {
     private final ReturnItemRepository returnItemRepository;
 
     @Transactional
-    public OrderDTO createOrder(Long employeeId,OrderDTO orderDTO) {
+    public OrderDTO createOrder(Long employeeId, OrderDTO orderDTO) {
+
         var user = userRepository.findById(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Sorry, this employee not found!"));
 
@@ -71,7 +74,10 @@ public class OrderService {
 
         BigDecimal total = BigDecimal.ZERO;
 
-        for (OrderItemDTO itemDTO : orderDTO.getOrderItems()) {
+        List<OrderItemDTO> items = new ArrayList<>(orderDTO.getOrderItems());
+
+        for (OrderItemDTO itemDTO : items) {
+
             var product = productRepository.findById(itemDTO.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Product not found!"));
             var inventory = inventoryRepository.findById(itemDTO.getInventoryId())
@@ -102,12 +108,10 @@ public class OrderService {
             order.getOrderItems().add(orderItem);
             total = total.add(subTotal);
 
-            // Update stock
             productInventory.setQuantity(productInventory.getQuantity() - itemDTO.getQuantity());
             productInventory.setUpdatedAt(LocalDateTime.now());
             productInventoryRepository.save(productInventory);
 
-            // Log transaction
             inventoryTransactionService.createInventoryTransaction(
                     user.getId(),
                     InventoryTransactionMapper.toDTO(
@@ -125,16 +129,18 @@ public class OrderService {
 
         BigDecimal taxAmount = orderDTO.getTaxAmount() != null ? orderDTO.getTaxAmount() : BigDecimal.ZERO;
         BigDecimal discountAmount = orderDTO.getDiscountAmount() != null ? orderDTO.getDiscountAmount() : BigDecimal.ZERO;
-
         BigDecimal finalTotal = total.subtract(discountAmount).add(taxAmount);
 
         order.setTaxAmount(taxAmount);
         order.setDiscountAmount(discountAmount);
         order.setTotalPrice(finalTotal);
+
+        // ✅ Save only the order; items will be cascaded automatically
         orderRepository.save(order);
-        orderItemRepository.saveAll(order.getOrderItems());
+
         return OrderMapper.toDTO(order);
     }
+
     @Cacheable(value = "ordersById",key = "#orderId")
     public OrderDTO getOrderById(Long orderId){
         return OrderMapper.toDTO(orderRepository.findById(orderId).orElseThrow(()->new IllegalArgumentException("Order Not Found !")));
@@ -203,15 +209,28 @@ public class OrderService {
         return changeOrderStatusById(orderId,OrderStatus.PENDING);
     }
     @Transactional
-    @CachePut(value = "ordersById",key = "#orderId")
-    public OrderDTO setOrderAsCanceled(Long orderId,Long employeeId){
-        var order = orderRepository.findById(orderId).orElseThrow(()->new IllegalArgumentException("Order Not Found !"));
-        if(!order.getOrderStatus().equals(OrderStatus.PENDING) && !order.getOrderStatus().equals(OrderStatus.PROCESSING))
-            throw new IllegalArgumentException("Sorry We Could Not Cancel This Order Because It's Already "+order.getOrderStatus().name()+" !");
-        var user = userRepository.findById(employeeId).orElseThrow(()->new IllegalArgumentException("Sorry This Employee Not Found !"));
-        if(returnRepository.existsByOrder_Id(orderId))
-            throw new IllegalArgumentException("This Order Already Canceled !");
-        Return aReturn =  Return.builder()
+    @CachePut(value = "ordersById", key = "#orderId")
+    public OrderDTO setOrderAsCanceled(Long orderId, Long employeeId) {
+
+        var order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order Not Found!"));
+
+        if (!(order.getOrderStatus().equals(OrderStatus.PENDING) ||
+                order.getOrderStatus().equals(OrderStatus.PROCESSING))) {
+            throw new IllegalArgumentException(
+                    "Sorry, this order cannot be canceled because it's already "
+                            + order.getOrderStatus().name() + "!"
+            );
+        }
+
+        var user = userRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Sorry, this employee was not found!"));
+
+        if (returnRepository.existsByOrder_Id(orderId)) {
+            throw new IllegalArgumentException("This order was already canceled!");
+        }
+
+        Return aReturn = Return.builder()
                 .order(order)
                 .customerName(order.getCustomerName())
                 .customerPhone(order.getCustomerPhone())
@@ -223,15 +242,23 @@ public class OrderService {
                 .user(user)
                 .build();
 
-        for(var orderItem:order.getOrderItems()){
+        for (var orderItem : order.getOrderItems()) {
             var product = orderItem.getProduct();
             var inventory = orderItem.getInventory();
-            var productInventory = productInventoryRepository.findByProductIdAndInventoryId(product.getId(),inventory.getId()).orElseThrow(()->new IllegalArgumentException("This Product Not Stored In This Inventory ! "));
-            productInventory.setQuantity(orderItem.getQuantity()+productInventory.getQuantity());
+
+            var productInventory = productInventoryRepository
+                    .findByProductIdAndInventoryId(product.getId(), inventory.getId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "This product is not stored in this inventory!"
+                    ));
+
+            productInventory.setQuantity(productInventory.getQuantity() + orderItem.getQuantity());
             productInventory.setUpdatedAt(LocalDateTime.now());
             productInventoryRepository.save(productInventory);
+
             inventoryTransactionService.createInventoryTransaction(
-                    user.getId(),InventoryTransactionMapper.toDTO(
+                    user.getId(),
+                    InventoryTransactionMapper.toDTO(
                             InventoryTransaction.builder()
                                     .inventory(inventory)
                                     .product(product)
@@ -244,15 +271,25 @@ public class OrderService {
                     )
             );
         }
-    var returnItems = order.getOrderItems().stream().map(orderItem -> ReturnItemMapper.toReturnItem(orderItem,aReturn)).toList();
+
+        // ✅ Safe: use mutable list and let Hibernate cascade persist
+        var returnItems = order.getOrderItems().stream()
+                .map(orderItem -> ReturnItemMapper.toReturnItem(orderItem, aReturn))
+                .collect(Collectors.toCollection(ArrayList::new));
+
         aReturn.setReturnItems(returnItems);
+
+        // ✅ Save only parent; CascadeType.ALL will handle children
         returnRepository.save(aReturn);
-        returnItemRepository.saveAll(returnItems);
+
         order.setOrderStatus(OrderStatus.CANCELED);
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
+
         return OrderMapper.toDTO(order);
     }
+
+
 
     public Page<Order> getOrdersByPaymentMethod(PaymentMethod paymentMethod,Pageable pageable){
         return orderRepository.findByPaymentMethod(paymentMethod,pageable);
