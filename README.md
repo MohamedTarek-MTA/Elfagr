@@ -499,6 +499,14 @@ The application uses JPA/Hibernate with automatic schema generation (`ddl-auto=u
 
 All tables support soft deletes via `isDeleted` flags and timestamps (`createdAt`, `updatedAt`, `deletedAt`).
 
+### Entity-Relationship Diagram (ERD)
+
+The following diagram illustrates the database structure and relationships between entities:
+
+![Database ERD](./docs/ElfajrDB.png)
+
+**Note**: If the image path above doesn't work, place your ERD image file in the `docs/` directory and update the path accordingly. Alternatively, you can use an absolute path or a URL if hosting the image externally.
+
 ---
 
 ## 📁 Project Structure
